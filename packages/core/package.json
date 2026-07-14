@@ -2,6 +2,7 @@
   "name": "region-kit",
   "version": "0.0.0",
   "description": "A framework-agnostic Node.js library for querying and navigating administrative region datasets.",
+  "license": "ISC",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
