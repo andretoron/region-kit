@@ -4,6 +4,6 @@ export default defineProject({
   test: {
     name: "region-kit",
     environment: "node",
-    include: ["test/**/*.test.ts"],
+    include: ["test/**/*.test.ts", "src/**/*.test.ts"],
   },
 });
