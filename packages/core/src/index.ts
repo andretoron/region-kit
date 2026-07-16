@@ -5,14 +5,17 @@ export type {
   RegionDataset,
 } from "./dataset/index.js";
 
+export { RegionKitError } from "./errors/index.js";
+export type { RegionKitErrorCode } from "./errors/index.js";
+
 export {
   DatasetValidationError,
   formatDatasetValidationPath,
 } from "./errors/index.js";
 
 export type {
-  DatasetValidationCode,
   DatasetValidationIssue,
+  DatasetValidationIssueCode,
   DatasetValidationPath,
   DatasetValidationPathSegment,
 } from "./errors/index.js";

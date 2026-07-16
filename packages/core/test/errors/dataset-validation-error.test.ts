@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   DatasetValidationError,
   formatDatasetValidationPath,
+  RegionKitError,
   type DatasetValidationIssue,
 } from "../../src/index.js";
 
@@ -17,9 +18,10 @@ describe("DatasetValidationError", () => {
     ]);
 
     expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(RegionKitError);
     expect(error).toBeInstanceOf(DatasetValidationError);
     expect(error.name).toBe("DatasetValidationError");
-    expect(error.code).toBe("DATASET_VALIDATION_ERROR");
+    expect(error.code).toBe("DATASET_INVALID");
     expect(error.message).toBe(
       "Dataset validation failed: Expected an object.",
     );

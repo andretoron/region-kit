@@ -1,4 +1,6 @@
-export type DatasetValidationCode =
+import { RegionKitError } from "./region-kit-error.js";
+
+export type DatasetValidationIssueCode =
   | "INVALID_DATASET"
   | "MISSING_REQUIRED_FIELD"
   | "INVALID_FIELD_TYPE"
@@ -18,13 +20,13 @@ export type DatasetValidationPathSegment = string | number;
 export type DatasetValidationPath = readonly DatasetValidationPathSegment[];
 
 export interface DatasetValidationIssue {
-  readonly code: DatasetValidationCode;
+  readonly code: DatasetValidationIssueCode;
   readonly path: DatasetValidationPath;
   readonly message: string;
 }
 
-export class DatasetValidationError extends Error {
-  readonly code = "DATASET_VALIDATION_ERROR";
+export class DatasetValidationError extends RegionKitError {
+  readonly code = "DATASET_INVALID" as const;
   readonly issues: readonly DatasetValidationIssue[];
 
   constructor(issues: readonly DatasetValidationIssue[]) {
@@ -36,7 +38,6 @@ export class DatasetValidationError extends Error {
 
     super(createDatasetValidationMessage(issues));
 
-    this.name = "DatasetValidationError";
     this.issues = Object.freeze(
       issues.map((issue) =>
         Object.freeze({
