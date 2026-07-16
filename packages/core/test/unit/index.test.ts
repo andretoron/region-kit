@@ -5,5 +5,10 @@ describe("public entry point", () => {
     const module = await import("../../src/index.js");
 
     expect(module).toBeDefined();
+    expect(module).not.toHaveProperty("SUPPORTED_DATASET_SCHEMA_MAJOR");
+    expect(module).not.toHaveProperty("assertSupportedDatasetSchemaVersion");
+    expect(module).not.toHaveProperty("formatDatasetValidationPath");
+    expect(module).not.toHaveProperty("isSupportedDatasetSchemaVersion");
+    expect(module).not.toHaveProperty("parseDatasetSchemaVersion");
   });
 });

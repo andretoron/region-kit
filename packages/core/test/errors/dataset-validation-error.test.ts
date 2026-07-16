@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   DatasetValidationError,
-  formatDatasetValidationPath,
   RegionKitError,
   type DatasetValidationIssue,
 } from "../../src/index.js";
+import { formatDatasetValidationPath } from "../../src/errors/dataset-validation-error.js";
 
 describe("DatasetValidationError", () => {
   it("creates an error from one issue", () => {

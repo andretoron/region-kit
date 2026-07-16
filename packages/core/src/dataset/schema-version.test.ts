@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   assertSupportedDatasetSchemaVersion,
-  DatasetValidationError,
   isSupportedDatasetSchemaVersion,
   parseDatasetSchemaVersion,
-} from "../index.js";
+} from "./schema-version.js";
+import { DatasetValidationError } from "../errors/index.js";
 
 describe("parseDatasetSchemaVersion", () => {
   it.each([
