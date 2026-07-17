@@ -15,3 +15,5 @@ export {
 } from "./schema-version.js";
 
 export type { DatasetSchemaVersion } from "./schema-version.js";
+
+export { validateDatasetStructure } from "./validate-dataset-structure.js";
