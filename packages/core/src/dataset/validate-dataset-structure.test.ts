@@ -203,16 +203,18 @@ describe("validateDatasetStructure", () => {
     expectIssue(error, "INVALID_FIELD_TYPE", [field]);
   });
 
-  it.each(["url", "retrievedAt"])(
-    "rejects an invalid optional source.%s",
-    (field) => {
+  it.each([
+    ["url", " ", "INVALID_FIELD_VALUE"],
+    ["url", 123, "INVALID_FIELD_TYPE"],
+    ["retrievedAt", " ", "INVALID_FIELD_VALUE"],
+    ["retrievedAt", false, "INVALID_FIELD_TYPE"],
+  ] as const)(
+    "rejects an invalid optional source.%s value %j",
+    (field, value, code) => {
       const dataset = createValidDataset();
-      (dataset.source as Record<string, unknown>)[field] = " ";
+      (dataset.source as Record<string, unknown>)[field] = value;
 
-      expectIssue(captureValidationError(dataset), "INVALID_FIELD_VALUE", [
-        "source",
-        field,
-      ]);
+      expectIssue(captureValidationError(dataset), code, ["source", field]);
     },
   );
 

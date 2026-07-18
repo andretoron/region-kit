@@ -30,6 +30,7 @@ describe("parseDatasetSchemaVersion", () => {
     "v1.0.0",
     "01.0.0",
     "1.00.0",
+    "1.0.0-beta",
     "1.0.0-beta.1",
     "1.0.0+build",
     "1.0.-1",
