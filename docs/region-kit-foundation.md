@@ -314,12 +314,12 @@ Field `id` merupakan identitas unik internal untuk setiap wilayah di dalam datas
 
 Ketentuan `id`:
 
-* Wajib tersedia.
-* Bertipe string.
-* Harus unik di dalam dataset.
-* Bersifat opaque bagi pengguna.
-* Tidak boleh diasumsikan memiliki format tertentu oleh consumer.
-* Tidak boleh digunakan dengan cara membongkar bagian-bagian string-nya.
+- Wajib tersedia.
+- Bertipe string.
+- Harus unik di dalam dataset.
+- Bersifat opaque bagi pengguna.
+- Tidak boleh diasumsikan memiliki format tertentu oleh consumer.
+- Tidak boleh digunakan dengan cara membongkar bagian-bagian string-nya.
 
 Contoh:
 
@@ -337,16 +337,16 @@ Field `code` merupakan kode wilayah yang berasal dari sumber data.
 
 Ketentuan `code`:
 
-* Wajib tersedia.
-* Bertipe string.
-* Nilai asli harus dipertahankan, termasuk leading zero.
-* Tidak diasumsikan unik secara global.
-* Dapat digunakan untuk lookup dalam cakupan dataset.
+- Wajib tersedia.
+- Bertipe string.
+- Nilai asli harus dipertahankan, termasuk leading zero.
+- Tidak diasumsikan unik secara global.
+- Dapat digunakan untuk lookup dalam cakupan dataset.
 
 `id` dan `code` memiliki tanggung jawab berbeda:
 
-* `id` digunakan sebagai identitas internal dan relasi.
-* `code` digunakan sebagai kode resmi atau kode sumber.
+- `id` digunakan sebagai identitas internal dan relasi.
+- `code` digunakan sebagai kode resmi atau kode sumber.
 
 ### Nama dan Alias
 
@@ -364,12 +364,12 @@ aliases?: string[];
 
 Alias dapat berupa:
 
-* Nama lama.
-* Nama tidak resmi yang umum digunakan.
-* Singkatan.
-* Variasi penulisan.
-* Nama dalam bahasa lain.
-* Bentuk nama tanpa awalan administratif jika memang diperlukan.
+- Nama lama.
+- Nama tidak resmi yang umum digunakan.
+- Singkatan.
+- Variasi penulisan.
+- Nama dalam bahasa lain.
+- Bentuk nama tanpa awalan administratif jika memang diperlukan.
 
 Nilai dalam `aliases` tidak menggantikan `name` sebagai nama utama.
 
@@ -445,19 +445,19 @@ parentId: string | null;
 
 Ketentuan relasi:
 
-* `parentId` harus merujuk pada `id` region lain dalam dataset yang sama.
-* Region root memiliki `parentId: null`.
-* Region selain root wajib memiliki parent.
-* Sebuah region tidak boleh menjadi parent bagi dirinya sendiri.
-* Relasi tidak boleh membentuk siklus.
-* Relasi tidak boleh menunjuk pada region yang tidak tersedia.
+- `parentId` harus merujuk pada `id` region lain dalam dataset yang sama.
+- Region root memiliki `parentId: null`.
+- Region selain root wajib memiliki parent.
+- Sebuah region tidak boleh menjadi parent bagi dirinya sendiri.
+- Relasi tidak boleh membentuk siklus.
+- Relasi tidak boleh menunjuk pada region yang tidak tersedia.
 
 Dataset tidak perlu menyimpan field berikut pada setiap region:
 
-* `childrenIds`
-* `ancestorIds`
-* `descendantIds`
-* `path`
+- `childrenIds`
+- `ancestorIds`
+- `descendantIds`
+- `path`
 
 `region-kit` membangun indeks relasi yang diperlukan ketika dataset dimuat. Dengan demikian, `parentId` tetap menjadi satu-satunya sumber kebenaran untuk hubungan hierarkis.
 
@@ -482,11 +482,11 @@ Contoh:
 
 Ketentuan penggunaan `attributes`:
 
-* Bersifat opsional.
-* Tidak digunakan sebagai pengganti field inti.
-* Tidak boleh berisi data yang diperlukan oleh operasi dasar `region-kit`.
-* Dapat berisi informasi khusus negara atau sumber.
-* Tidak dijamin memiliki struktur yang sama antar-dataset.
+- Bersifat opsional.
+- Tidak digunakan sebagai pengganti field inti.
+- Tidak boleh berisi data yang diperlukan oleh operasi dasar `region-kit`.
+- Dapat berisi informasi khusus negara atau sumber.
+- Tidak dijamin memiliki struktur yang sama antar-dataset.
 
 Field yang kemudian terbukti menjadi kebutuhan utama lintas dataset dapat dipromosikan menjadi bagian resmi model pada versi schema berikutnya.
 
@@ -558,11 +558,11 @@ Satu `RegionDataset` hanya mencakup satu negara.
 
 Keputusan ini dipilih karena:
 
-* Setiap negara dapat memiliki struktur administratif berbeda.
-* Dataset lebih mudah divalidasi dan diperbarui secara independen.
-* Ukuran dan versi dataset dapat dikelola per negara.
-* Kegagalan atau perubahan pada satu negara tidak memengaruhi negara lain.
-* Consumer dapat memuat hanya negara yang dibutuhkan.
+- Setiap negara dapat memiliki struktur administratif berbeda.
+- Dataset lebih mudah divalidasi dan diperbarui secara independen.
+- Ukuran dan versi dataset dapat dikelola per negara.
+- Kegagalan atau perubahan pada satu negara tidak memengaruhi negara lain.
+- Consumer dapat memuat hanya negara yang dibutuhkan.
 
 Aplikasi tetap dapat menggunakan beberapa dataset negara secara bersamaan melalui instance atau mekanisme agregasi pada level aplikasi.
 
@@ -579,11 +579,11 @@ Indonesia + Kemendagri = dataset lain
 
 Data dari beberapa sumber tidak digabungkan secara diam-diam ke dalam satu dataset karena:
 
-* Kode wilayah antar-sumber dapat berbeda.
-* Struktur administratif dapat berbeda.
-* Waktu pembaruan dapat berbeda.
-* Konflik data memerlukan aturan rekonsiliasi yang eksplisit.
-* Provenance setiap nilai akan menjadi tidak jelas.
+- Kode wilayah antar-sumber dapat berbeda.
+- Struktur administratif dapat berbeda.
+- Waktu pembaruan dapat berbeda.
+- Konflik data memerlukan aturan rekonsiliasi yang eksplisit.
+- Provenance setiap nilai akan menjadi tidak jelas.
 
 Jika pada masa mendatang diperlukan dataset gabungan, proses rekonsiliasi harus dilakukan oleh pipeline terpisah. Hasilnya harus dipublikasikan sebagai dataset baru dengan identitas sumber yang jelas, bukan dianggap sebagai dataset dari salah satu sumber aslinya.
 
@@ -591,8 +591,8 @@ Jika pada masa mendatang diperlukan dataset gabungan, proses rekonsiliasi harus 
 
 `schemaVersion` dan `datasetVersion` memiliki fungsi berbeda:
 
-* `schemaVersion` menunjukkan versi struktur atau kontrak data.
-* `datasetVersion` menunjukkan versi isi dataset.
+- `schemaVersion` menunjukkan versi struktur atau kontrak data.
+- `datasetVersion` menunjukkan versi isi dataset.
 
 Perubahan data wilayah tanpa perubahan struktur hanya menaikkan `datasetVersion`.
 
@@ -604,20 +604,20 @@ Kedua nilai harus diperlakukan sebagai string dan mengikuti aturan versioning ya
 
 Saat dataset dimuat, `region-kit` harus memeriksa sekurangnya:
 
-* Metadata wajib tersedia.
-* `schemaVersion` didukung.
-* Hanya terdapat satu root.
-* Root berada pada level `0`.
-* Root memiliki tipe `country`.
-* Root memiliki `parentId: null`.
-* Semua `id` unik.
-* Semua `parentId` valid.
-* Tidak terdapat orphan region.
-* Tidak terdapat self-reference.
-* Tidak terdapat siklus hierarki.
-* Field wajib memiliki tipe yang sesuai.
-* Setiap region selain root memiliki parent.
-* Struktur hierarki dapat diindeks untuk pencarian dan penelusuran.
+- Metadata wajib tersedia.
+- `schemaVersion` didukung.
+- Hanya terdapat satu root.
+- Root berada pada level `0`.
+- Root memiliki tipe `country`.
+- Root memiliki `parentId: null`.
+- Semua `id` unik.
+- Semua `parentId` valid.
+- Tidak terdapat orphan region.
+- Tidak terdapat self-reference.
+- Tidak terdapat siklus hierarki.
+- Field wajib memiliki tipe yang sesuai.
+- Setiap region selain root memiliki parent.
+- Struktur hierarki dapat diindeks untuk pencarian dan penelusuran.
 
 Validasi tersebut tidak mengubah atau memperbaiki dataset.
 
@@ -892,23 +892,23 @@ Nama package final akan diputuskan ketika strategi repository dan distribusi pac
 
 ### Ringkasan Keputusan Arsitektur
 
-| Aspek | Keputusan |
-| --- | --- |
-| Core MVP | Single package modular monolith |
-| Public facade | `RegionKit` |
-| Storage boundary | Read-only `RegionStore` contract |
-| Public query | Selalu asinkron |
-| Default storage | Memory/JSON |
-| Runtime indexes | Khusus memory store |
-| Database query | Dieksekusi native oleh adapter |
-| Mutasi runtime | Tidak didukung |
-| Import database | Tooling terpisah |
-| Database adapter pertama | PostgreSQL |
-| Driver database dalam core | Tidak ada |
-| Extension point | Implementasi `RegionStore` |
-| Plugin system umum | Tidak digunakan |
-| Dependency injection | Explicit dependency melalui constructor/factory |
-| Optimasi | Berdasarkan benchmark nyata |
+| Aspek                      | Keputusan                                       |
+| -------------------------- | ----------------------------------------------- |
+| Core MVP                   | Single package modular monolith                 |
+| Public facade              | `RegionKit`                                     |
+| Storage boundary           | Read-only `RegionStore` contract                |
+| Public query               | Selalu asinkron                                 |
+| Default storage            | Memory/JSON                                     |
+| Runtime indexes            | Khusus memory store                             |
+| Database query             | Dieksekusi native oleh adapter                  |
+| Mutasi runtime             | Tidak didukung                                  |
+| Import database            | Tooling terpisah                                |
+| Database adapter pertama   | PostgreSQL                                      |
+| Driver database dalam core | Tidak ada                                       |
+| Extension point            | Implementasi `RegionStore`                      |
+| Plugin system umum         | Tidak digunakan                                 |
+| Dependency injection       | Explicit dependency melalui constructor/factory |
+| Optimasi                   | Berdasarkan benchmark nyata                     |
 
 ## 5. Penyimpanan dan Distribusi Data
 
@@ -1119,28 +1119,28 @@ Streaming JSON, lazy loading, partial dataset loading, dan caching persisten dit
 
 ### Ringkasan Keputusan Penyimpanan dan Distribusi
 
-| Aspek | Keputusan |
-| --- | --- |
-| Dataset dalam core package | Tidak dibundel |
-| Penerbit dataset resmi | Release `region_squirrel` |
-| Integritas release | SHA-256 checksum |
-| Format pertukaran MVP | JSON |
-| Default storage | Memory/JSON |
-| SQL target | PostgreSQL dan MySQL |
-| Non-SQL target | MongoDB |
-| Prioritas database pertama | PostgreSQL |
-| Adapter database | Package terpisah |
-| Driver database dalam core | Tidak ada |
-| Query database | Native melalui adapter |
-| Import database | Tooling terpisah dari runtime |
-| Download runtime otomatis | Tidak didukung |
-| Validasi file | Penuh saat loading |
-| Validasi database penuh | Saat import |
-| Validasi database runtime | Koneksi dan kompatibilitas |
-| Versi library, schema, dataset, storage | Dipisahkan |
-| Kompresi release | Boleh disediakan |
-| Loading memory | Eager pada MVP |
-| Optimasi lanjutan | Berdasarkan benchmark |
+| Aspek                                   | Keputusan                     |
+| --------------------------------------- | ----------------------------- |
+| Dataset dalam core package              | Tidak dibundel                |
+| Penerbit dataset resmi                  | Release `region_squirrel`     |
+| Integritas release                      | SHA-256 checksum              |
+| Format pertukaran MVP                   | JSON                          |
+| Default storage                         | Memory/JSON                   |
+| SQL target                              | PostgreSQL dan MySQL          |
+| Non-SQL target                          | MongoDB                       |
+| Prioritas database pertama              | PostgreSQL                    |
+| Adapter database                        | Package terpisah              |
+| Driver database dalam core              | Tidak ada                     |
+| Query database                          | Native melalui adapter        |
+| Import database                         | Tooling terpisah dari runtime |
+| Download runtime otomatis               | Tidak didukung                |
+| Validasi file                           | Penuh saat loading            |
+| Validasi database penuh                 | Saat import                   |
+| Validasi database runtime               | Koneksi dan kompatibilitas    |
+| Versi library, schema, dataset, storage | Dipisahkan                    |
+| Kompresi release                        | Boleh disediakan              |
+| Loading memory                          | Eager pada MVP                |
+| Optimasi lanjutan                       | Berdasarkan benchmark         |
 
 ## 6. Public API
 
@@ -1216,39 +1216,21 @@ class RegionKit {
   getById(id: string): Promise<Region | null>;
   requireById(id: string): Promise<Region>;
 
-  findByCode(
-    code: string,
-    options?: FindOptions,
-  ): Promise<RegionPage>;
+  findByCode(code: string, options?: FindOptions): Promise<RegionPage>;
 
-  findByName(
-    name: string,
-    options?: FindByNameOptions,
-  ): Promise<RegionPage>;
+  findByName(name: string, options?: FindByNameOptions): Promise<RegionPage>;
 
-  search(
-    query: string,
-    options?: SearchOptions,
-  ): Promise<RegionSearchPage>;
+  search(query: string, options?: SearchOptions): Promise<RegionSearchPage>;
 
-  filter(
-    criteria: RegionFilter,
-    options?: QueryOptions,
-  ): Promise<RegionPage>;
+  filter(criteria: RegionFilter, options?: QueryOptions): Promise<RegionPage>;
 
   parentOf(id: string): Promise<Region | null>;
 
-  childrenOf(
-    id: string,
-    options?: QueryOptions,
-  ): Promise<RegionPage>;
+  childrenOf(id: string, options?: QueryOptions): Promise<RegionPage>;
 
   ancestorsOf(id: string): Promise<readonly Region[]>;
 
-  descendantsOf(
-    id: string,
-    options?: DescendantOptions,
-  ): Promise<RegionPage>;
+  descendantsOf(id: string, options?: DescendantOptions): Promise<RegionPage>;
 
   close(): Promise<void>;
 }
@@ -1438,13 +1420,13 @@ interface SortOptions {
 
 Default sorting:
 
-| Operasi | Urutan default |
-| --- | --- |
-| `findByCode()` | `code ASC`, lalu `id ASC` |
-| `findByName()` | `name ASC`, lalu `id ASC` |
-| `childrenOf()` | `code ASC`, lalu `id ASC` |
+| Operasi           | Urutan default                         |
+| ----------------- | -------------------------------------- |
+| `findByCode()`    | `code ASC`, lalu `id ASC`              |
+| `findByName()`    | `name ASC`, lalu `id ASC`              |
+| `childrenOf()`    | `code ASC`, lalu `id ASC`              |
 | `descendantsOf()` | `level ASC`, `code ASC`, lalu `id ASC` |
-| `filter()` | `level ASC`, `code ASC`, lalu `id ASC` |
+| `filter()`        | `level ASC`, `code ASC`, lalu `id ASC` |
 
 `id` selalu digunakan sebagai tie-breaker internal.
 
@@ -1650,32 +1632,32 @@ Public API MVP tidak menyediakan:
 
 ### Ringkasan Keputusan
 
-| Aspek | Keputusan |
-| --- | --- |
-| Inisialisasi | Static async factory |
-| Constructor public | Tidak diekspos |
-| Factory JSON | `fromFile()` dan `fromData()` |
-| Factory adapter | `fromStore()` |
-| Operasi public | Selalu mengembalikan `Promise` |
-| Optional ID lookup | `getById()` menghasilkan `Region \| null` |
-| Required ID lookup | `requireById()` atau error |
-| Lookup kode | Collection terpaginasikan |
-| Search match | Exact, prefix, contains |
-| Fuzzy search | Tidak didukung pada MVP |
-| Pagination | Offset pagination |
-| Default limit | `50` |
-| Maximum limit | `1000` |
-| Total count | Opsional |
-| Sorting | Deterministik dengan `id` tie-breaker |
-| Target traversal tidak ditemukan | `RegionNotFoundError` |
-| Urutan ancestors | Parent langsung menuju root |
-| Descendants | Terpaginasikan dan mendukung `maxDepth` |
-| Mutasi internal melalui hasil | Tidak diizinkan |
-| Metadata | `getMetadata()` |
-| Resource lifecycle | `close()` |
-| Error handling | Exception class dan stable code |
-| Storage-specific query | Tidak masuk universal API |
-| Export surface | Minimal dan eksplisit |
+| Aspek                            | Keputusan                                 |
+| -------------------------------- | ----------------------------------------- |
+| Inisialisasi                     | Static async factory                      |
+| Constructor public               | Tidak diekspos                            |
+| Factory JSON                     | `fromFile()` dan `fromData()`             |
+| Factory adapter                  | `fromStore()`                             |
+| Operasi public                   | Selalu mengembalikan `Promise`            |
+| Optional ID lookup               | `getById()` menghasilkan `Region \| null` |
+| Required ID lookup               | `requireById()` atau error                |
+| Lookup kode                      | Collection terpaginasikan                 |
+| Search match                     | Exact, prefix, contains                   |
+| Fuzzy search                     | Tidak didukung pada MVP                   |
+| Pagination                       | Offset pagination                         |
+| Default limit                    | `50`                                      |
+| Maximum limit                    | `1000`                                    |
+| Total count                      | Opsional                                  |
+| Sorting                          | Deterministik dengan `id` tie-breaker     |
+| Target traversal tidak ditemukan | `RegionNotFoundError`                     |
+| Urutan ancestors                 | Parent langsung menuju root               |
+| Descendants                      | Terpaginasikan dan mendukung `maxDepth`   |
+| Mutasi internal melalui hasil    | Tidak diizinkan                           |
+| Metadata                         | `getMetadata()`                           |
+| Resource lifecycle               | `close()`                                 |
+| Error handling                   | Exception class dan stable code           |
+| Storage-specific query           | Tidak masuk universal API                 |
+| Export surface                   | Minimal dan eksplisit                     |
 
 ## 7. Toolchain
 
@@ -1766,13 +1748,13 @@ Core MVP tidak menggunakan bundler seperti Rollup, esbuild, tsup, atau Vite untu
 
 TypeScript compiler dipilih karena:
 
-* `region-kit` merupakan library Node.js ESM.
-* Node.js dapat menjalankan output ESM secara langsung.
-* Tidak ada kebutuhan browser bundle.
-* Tidak ada kebutuhan menggabungkan seluruh modul menjadi satu file.
-* Build dan source map lebih mudah diperiksa.
-* Type declaration dapat dihasilkan langsung.
-* Struktur module internal tetap terlihat dan dapat dianalisis.
+- `region-kit` merupakan library Node.js ESM.
+- Node.js dapat menjalankan output ESM secara langsung.
+- Tidak ada kebutuhan browser bundle.
+- Tidak ada kebutuhan menggabungkan seluruh modul menjadi satu file.
+- Build dan source map lebih mudah diperiksa.
+- Type declaration dapat dihasilkan langsung.
+- Struktur module internal tetap terlihat dan dapat dianalisis.
 
 Bundler hanya ditambahkan jika kemudian terdapat kebutuhan yang tidak dapat dipenuhi oleh `tsc`.
 
@@ -1842,11 +1824,7 @@ Walaupun source file menggunakan `.ts`, specifier memakai `.js` karena itulah fi
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "README.md", "LICENSE"],
   "engines": {
     "node": ">=22"
   }
@@ -1932,23 +1910,23 @@ test/
 
 Unit test memeriksa komponen terisolasi seperti:
 
-* Dataset validation.
-* Search normalization.
-* Pagination.
-* Sorting.
-* Hierarchy traversal.
-* Error mapping.
-* Memory indexes.
+- Dataset validation.
+- Search normalization.
+- Pagination.
+- Sorting.
+- Hierarchy traversal.
+- Error mapping.
+- Memory indexes.
 
 #### Integration Test
 
 Integration test memeriksa beberapa komponen bersama-sama:
 
-* `fromFile()` dengan file JSON.
-* `fromData()` dengan object JavaScript.
-* Pembangunan memory store.
-* Public API terhadap dataset nyata atau fixture representatif.
-* Lifecycle instance.
+- `fromFile()` dengan file JSON.
+- `fromData()` dengan object JavaScript.
+- Pembangunan memory store.
+- Public API terhadap dataset nyata atau fixture representatif.
+- Lifecycle instance.
 
 #### Storage Contract Test
 
@@ -1964,12 +1942,12 @@ Contract suite memeriksa bahwa memory, PostgreSQL, MySQL, dan MongoDB menghasilk
 
 Test khusus adapter tetap diperbolehkan untuk memeriksa:
 
-* Connection handling.
-* Database schema.
-* Transaction.
-* Native indexing.
-* Error translation.
-* Resource cleanup.
+- Connection handling.
+- Database schema.
+- Transaction.
+- Native indexing.
+- Error translation.
+- Resource cleanup.
 
 #### Test Database
 
@@ -2021,12 +1999,12 @@ pnpm lint
 
 Linting bertanggung jawab untuk:
 
-* Menemukan kemungkinan bug.
-* Menegakkan praktik TypeScript yang aman.
-* Menemukan import yang tidak valid.
-* Menemukan Promise yang tidak ditangani.
-* Menemukan variable atau kode yang tidak digunakan.
-* Menjaga konsistensi aturan source code.
+- Menemukan kemungkinan bug.
+- Menegakkan praktik TypeScript yang aman.
+- Menemukan import yang tidak valid.
+- Menemukan Promise yang tidak ditangani.
+- Menemukan variable atau kode yang tidak digunakan.
+- Menjaga konsistensi aturan source code.
 
 Aturan lint yang memerlukan type information hanya digunakan jika manfaatnya sebanding dengan biaya eksekusinya.
 
@@ -2056,9 +2034,9 @@ pnpm format:check
 
 Pembagian tanggung jawab:
 
-* ESLint memeriksa kualitas dan potensi kesalahan kode.
-* Prettier mengatur formatting.
-* Aturan formatting tidak diduplikasi secara manual dalam ESLint.
+- ESLint memeriksa kualitas dan potensi kesalahan kode.
+- Prettier mengatur formatting.
+- Aturan formatting tidak diduplikasi secara manual dalam ESLint.
 
 File generated, build output, coverage, dan fixture besar harus dimasukkan ke `.prettierignore` jika tidak layak diformat.
 
@@ -2086,15 +2064,15 @@ pnpm docs
 
 Dokumentasi tidak hanya mengandalkan output TypeDoc. Repository tetap membutuhkan:
 
-* `README.md`.
-* Installation guide.
-* Quick-start example.
-* JSON usage example.
-* Database adapter example setelah tersedia.
-* Public API concepts.
-* Error handling guide.
-* Dataset compatibility guide.
-* Migration guide untuk breaking release.
+- `README.md`.
+- Installation guide.
+- Quick-start example.
+- JSON usage example.
+- Database adapter example setelah tersedia.
+- Public API concepts.
+- Error handling guide.
+- Dataset compatibility guide.
+- Migration guide untuk breaking release.
 
 TSDoc wajib digunakan pada public export yang perilakunya tidak langsung jelas.
 
@@ -2111,12 +2089,12 @@ publint
 
 Pemeriksaan tersebut membantu menemukan masalah pada:
 
-* `package.json`.
-* ESM exports.
-* Type declaration resolution.
-* Entry point.
-* File yang tidak sengaja ikut dipublikasikan.
-* Ketidaksesuaian JavaScript dan TypeScript consumer.
+- `package.json`.
+- ESM exports.
+- Type declaration resolution.
+- Entry point.
+- File yang tidak sengaja ikut dipublikasikan.
+- Ketidaksesuaian JavaScript dan TypeScript consumer.
 
 Script:
 
@@ -2195,12 +2173,12 @@ Node.js 26 ditambahkan setelah berstatus LTS.
 
 Strategi yang direkomendasikan:
 
-* Lint, formatting, dan typecheck cukup dijalankan sekali pada Node.js utama.
-* Test dijalankan pada seluruh Node.js compatibility matrix.
-* Build dan package validation dijalankan pada Node.js versi release.
-* Dependency cache menggunakan dukungan cache pnpm pada GitHub Actions.
-* CI selalu memakai frozen lockfile.
-* Release tidak boleh berjalan jika quality checks gagal.
+- Lint, formatting, dan typecheck cukup dijalankan sekali pada Node.js utama.
+- Test dijalankan pada seluruh Node.js compatibility matrix.
+- Build dan package validation dijalankan pada Node.js versi release.
+- Dependency cache menggunakan dukungan cache pnpm pada GitHub Actions.
+- CI selalu memakai frozen lockfile.
+- Release tidak boleh berjalan jika quality checks gagal.
 
 Dokumentasi resmi pnpm menyediakan pola integrasi GitHub Actions dan penggunaan dependency store cache. [pnpm CI documentation](https://pnpm.io/continuous-integration)
 
@@ -2226,9 +2204,9 @@ pnpm changeset
 
 Changeset mencatat:
 
-* Package yang berubah.
-* Jenis perubahan: major, minor, atau patch.
-* Ringkasan perubahan untuk changelog.
+- Package yang berubah.
+- Jenis perubahan: major, minor, atau patch.
+- Ringkasan perubahan untuk changelog.
 
 Perubahan internal yang tidak berdampak pada package dapat tidak memiliki changeset.
 
@@ -2274,14 +2252,14 @@ Publikasi manual dari mesin developer tidak menjadi jalur release normal.
 
 Aturan dependency:
 
-* Gunakan dependency hanya jika manfaatnya jelas.
-* Dependency runtime dijaga seminimal mungkin.
-* Tool build, test, lint, dan dokumentasi ditempatkan dalam `devDependencies`.
-* Driver PostgreSQL, MySQL, dan MongoDB tidak menjadi dependency core.
-* Adapter database menentukan driver atau peer dependency masing-masing.
-* Dependency version dikunci melalui `pnpm-lock.yaml`.
-* Pembaruan dependency harus melewati CI.
-* Install script dependency hanya diizinkan untuk package yang dipercaya dan memang membutuhkannya.
+- Gunakan dependency hanya jika manfaatnya jelas.
+- Dependency runtime dijaga seminimal mungkin.
+- Tool build, test, lint, dan dokumentasi ditempatkan dalam `devDependencies`.
+- Driver PostgreSQL, MySQL, dan MongoDB tidak menjadi dependency core.
+- Adapter database menentukan driver atau peer dependency masing-masing.
+- Dependency version dikunci melalui `pnpm-lock.yaml`.
+- Pembaruan dependency harus melewati CI.
+- Install script dependency hanya diizinkan untuk package yang dipercaya dan memang membutuhkannya.
 
 pnpm menyediakan kontrol terhadap dependency build script untuk mengurangi risiko supply-chain. [pnpm supply-chain security](https://pnpm.io/supply-chain-security)
 
@@ -2301,18 +2279,18 @@ CI menjadi enforcement yang sebenarnya. Git hook hanya dipertimbangkan jika tim 
 
 Toolchain MVP tidak menggunakan:
 
-* Bundler.
-* CommonJS build.
-* Babel.
-* Husky.
-* lint-staged.
-* Jest.
-* Multiple test runners.
-* Automated dependency bot tanpa konfigurasi yang jelas.
-* Custom release script.
-* npm access token jangka panjang.
-* Commit `dist` ke repository.
-* Database driver dalam core package.
+- Bundler.
+- CommonJS build.
+- Babel.
+- Husky.
+- lint-staged.
+- Jest.
+- Multiple test runners.
+- Automated dependency bot tanpa konfigurasi yang jelas.
+- Custom release script.
+- npm access token jangka panjang.
+- Commit `dist` ke repository.
+- Database driver dalam core package.
 
 ### Ringkasan Keputusan
 
@@ -2443,13 +2421,13 @@ Root repository bersifat private dan tidak dipublikasikan ke npm.
 
 Root bertanggung jawab untuk:
 
-* Workspace orchestration.
-* Shared development dependencies.
-* Linting dan formatting.
-* CI commands.
-* Release management.
-* Shared TypeScript configuration.
-* Shared Vitest configuration.
+- Workspace orchestration.
+- Shared development dependencies.
+- Linting dan formatting.
+- CI commands.
+- Release management.
+- Shared TypeScript configuration.
+- Shared Vitest configuration.
 
 Root tidak boleh mengekspor runtime code.
 
@@ -2606,13 +2584,13 @@ Memory store implementation
 
 Ketentuan:
 
-* `RegionKit` boleh bergantung pada `RegionStore`.
-* Memory store mengimplementasikan `RegionStore`.
-* Domain type tidak boleh bergantung pada memory store.
-* Validator tidak boleh bergantung pada public facade.
-* Error dasar tidak boleh bergantung pada storage implementation.
-* Core tidak boleh mengimpor database driver.
-* Adapter database tidak boleh mengakses internal file core melalui relative path atau deep import.
+- `RegionKit` boleh bergantung pada `RegionStore`.
+- Memory store mengimplementasikan `RegionStore`.
+- Domain type tidak boleh bergantung pada memory store.
+- Validator tidak boleh bergantung pada public facade.
+- Error dasar tidak boleh bergantung pada storage implementation.
+- Core tidak boleh mengimpor database driver.
+- Adapter database tidak boleh mengakses internal file core melalui relative path atau deep import.
 
 Jika adapter membutuhkan sebuah tipe, tipe tersebut harus menjadi bagian extension contract yang diekspor secara resmi.
 
@@ -2636,13 +2614,13 @@ test/unit/
 
 Digunakan untuk:
 
-* Search normalization.
-* Pagination.
-* Sorting.
-* Dataset validation rules.
-* Memory indexes.
-* Error construction.
-* Individual traversal behaviour.
+- Search normalization.
+- Pagination.
+- Sorting.
+- Dataset validation rules.
+- Memory indexes.
+- Error construction.
+- Individual traversal behaviour.
 
 #### Integration Tests
 
@@ -2652,11 +2630,11 @@ test/integration/
 
 Digunakan untuk:
 
-* `RegionKit.fromFile()`.
-* `RegionKit.fromData()`.
-* Public API menggunakan memory store.
-* Lifecycle instance.
-* Error propagation antar-komponen.
+- `RegionKit.fromFile()`.
+- `RegionKit.fromData()`.
+- Public API menggunakan memory store.
+- Lifecycle instance.
+- Error propagation antar-komponen.
 
 #### Contract Tests
 
@@ -2687,11 +2665,11 @@ test/fixtures/
 
 Fixture harus:
 
-* Kecil.
-* Deterministik.
-* Mudah diperiksa.
-* Mencakup kasus valid dan invalid.
-* Tidak menggandakan seluruh dataset produksi.
+- Kecil.
+- Deterministik.
+- Mudah diperiksa.
+- Mencakup kasus valid dan invalid.
+- Tidak menggandakan seluruh dataset produksi.
 
 Contoh:
 
@@ -2738,12 +2716,12 @@ docs/
 
 Pembagian dokumentasi:
 
-* Root `README.md` untuk pengenalan dan quick start.
-* `packages/core/README.md` untuk dokumentasi package npm.
-* `docs/concepts/` untuk konsep arsitektur.
-* `docs/guides/` untuk panduan penggunaan.
-* `docs/reference/` untuk API reference atau link ke output TypeDoc.
-* `docs/decisions/` untuk Architecture Decision Records.
+- Root `README.md` untuk pengenalan dan quick start.
+- `packages/core/README.md` untuk dokumentasi package npm.
+- `docs/concepts/` untuk konsep arsitektur.
+- `docs/guides/` untuk panduan penggunaan.
+- `docs/reference/` untuk API reference atau link ke output TypeDoc.
+- `docs/decisions/` untuk Architecture Decision Records.
 
 Dokumen fondasi proyek ini dapat ditempatkan di:
 
@@ -2789,11 +2767,11 @@ Dampak positif, kompromi, dan risiko.
 
 Tidak setiap perubahan kecil memerlukan ADR. ADR digunakan untuk keputusan yang:
 
-* Sulit dibalik.
-* Memengaruhi public API.
-* Memengaruhi package boundary.
-* Memengaruhi storage contract.
-* Mengandung trade-off penting.
+- Sulit dibalik.
+- Memengaruhi public API.
+- Memengaruhi package boundary.
+- Memengaruhi storage contract.
+- Mengandung trade-off penting.
 
 ### Examples
 
@@ -2854,11 +2832,11 @@ scripts/
 
 Folder tersebut hanya digunakan untuk automation lintas-package seperti:
 
-* Memeriksa isi package tarball.
-* Menjalankan benchmark terkoordinasi.
-* Menyiapkan database integration test.
-* Memverifikasi fixture atau dataset release.
-* Automation dokumentasi.
+- Memeriksa isi package tarball.
+- Menjalankan benchmark terkoordinasi.
+- Menyiapkan database integration test.
+- Memverifikasi fixture atau dataset release.
+- Automation dokumentasi.
 
 Business logic dan runtime code tidak boleh ditempatkan di `scripts/`.
 
@@ -2897,12 +2875,12 @@ packages/postgresql/
 
 Adapter:
 
-* Bergantung pada public extension contract dari `region-kit`.
-* Tidak menggunakan deep import dari core.
-* Memiliki integration test dengan database nyata.
-* Menjalankan shared RegionStore contract tests.
-* Memiliki version dan changelog sendiri.
-* Tidak menambahkan dependency driver ke core.
+- Bergantung pada public extension contract dari `region-kit`.
+- Tidak menggunakan deep import dari core.
+- Memiliki integration test dengan database nyata.
+- Menjalankan shared RegionStore contract tests.
+- Memiliki version dan changelog sendiri.
+- Tidak menambahkan dependency driver ke core.
 
 ### Import Tooling Masa Depan
 
@@ -2924,9 +2902,9 @@ tools/
 
 Lokasi final ditentukan berdasarkan sifat distribusinya:
 
-* Jika dipublikasikan dan digunakan consumer, jadikan package.
-* Jika hanya digunakan internal repository, tempatkan sebagai tool internal.
-* Jika memiliki CLI publik, definisikan package dan executable sendiri.
+- Jika dipublikasikan dan digunakan consumer, jadikan package.
+- Jika hanya digunakan internal repository, tempatkan sebagai tool internal.
+- Jika memiliki CLI publik, definisikan package dan executable sendiri.
 
 Importer tidak boleh membuat public runtime API core menjadi mutable.
 
@@ -2958,12 +2936,12 @@ Repository hanya menyimpan fixture kecil untuk test dan example.
 
 Tidak boleh dimasukkan:
 
-* Seluruh output `region_squirrel`.
-* File JSON produksi besar.
-* Database dump.
-* File hasil crawling.
-* Credential database.
-* Environment file pribadi.
+- Seluruh output `region_squirrel`.
+- File JSON produksi besar.
+- Database dump.
+- File hasil crawling.
+- Credential database.
+- Environment file pribadi.
 
 Dataset produksi tetap didistribusikan melalui release `region_squirrel` bersama checksum.
 
@@ -3015,14 +2993,14 @@ Package configuration tidak boleh menyalin seluruh konfigurasi root tanpa alasan
 
 Ketentuan awal:
 
-* Nama folder menggunakan `kebab-case`.
-* Nama file TypeScript menggunakan `kebab-case`.
-* Class dan type menggunakan `PascalCase`.
-* Function dan variable menggunakan `camelCase`.
-* Constant menggunakan `UPPER_SNAKE_CASE` hanya untuk nilai yang benar-benar constant.
-* Test file menggunakan suffix `.test.ts`.
-* Type-only import menggunakan `import type`.
-* Public export menggunakan nama eksplisit, bukan wildcard tanpa kontrol.
+- Nama folder menggunakan `kebab-case`.
+- Nama file TypeScript menggunakan `kebab-case`.
+- Class dan type menggunakan `PascalCase`.
+- Function dan variable menggunakan `camelCase`.
+- Constant menggunakan `UPPER_SNAKE_CASE` hanya untuk nilai yang benar-benar constant.
+- Test file menggunakan suffix `.test.ts`.
+- Type-only import menggunakan `import type`.
+- Public export menggunakan nama eksplisit, bukan wildcard tanpa kontrol.
 
 Contoh:
 
@@ -3038,16 +3016,16 @@ Barrel file seperti `index.ts` digunakan secara terbatas.
 
 Diperbolehkan untuk:
 
-* Public package entry point.
-* Public error exports.
-* Public type exports.
+- Public package entry point.
+- Public error exports.
+- Public type exports.
 
 Tidak direkomendasikan membuat barrel di setiap folder internal karena dapat:
 
-* Menyembunyikan dependency direction.
-* Membuat circular dependency.
-* Menambah module load yang tidak diperlukan.
-* Menyulitkan pencarian asal simbol.
+- Menyembunyikan dependency direction.
+- Membuat circular dependency.
+- Menambah module load yang tidak diperlukan.
+- Menyulitkan pencarian asal simbol.
 
 Internal module sebaiknya mengimpor file tujuan secara langsung.
 
@@ -3067,28 +3045,28 @@ Storage implementations
 
 Aturan:
 
-* Core domain tidak bergantung pada adapter database.
-* Adapter bergantung pada public contract core.
-* Memory store berada dalam core karena merupakan implementasi default.
-* Example bergantung pada package, bukan source file internal.
-* Test boleh mengakses internal module package yang sedang diuji, tetapi contract test harus berorientasi pada public behaviour.
-* Dokumentasi tidak menjadi dependency runtime.
+- Core domain tidak bergantung pada adapter database.
+- Adapter bergantung pada public contract core.
+- Memory store berada dalam core karena merupakan implementasi default.
+- Example bergantung pada package, bukan source file internal.
+- Test boleh mengakses internal module package yang sedang diuji, tetapi contract test harus berorientasi pada public behaviour.
+- Dokumentasi tidak menjadi dependency runtime.
 
 ### Hal yang Tidak Dilakukan pada MVP
 
 Repository MVP tidak:
 
-* Membuat folder adapter kosong.
-* Membuat package kosong untuk PostgreSQL, MySQL, atau MongoDB.
-* Membuat `@region-kit/testkit` sebelum diperlukan.
-* Menyimpan dataset produksi.
-* Menyimpan database dump.
-* Meng-commit build output.
-* Menggunakan Git submodule.
-* Memisahkan core menjadi banyak package kecil.
-* Menduplikasi konfigurasi pada setiap package.
-* Menempatkan semua kode dalam folder `utils`.
-* Mengekspor internal module untuk kemudahan sementara.
+- Membuat folder adapter kosong.
+- Membuat package kosong untuk PostgreSQL, MySQL, atau MongoDB.
+- Membuat `@region-kit/testkit` sebelum diperlukan.
+- Menyimpan dataset produksi.
+- Menyimpan database dump.
+- Meng-commit build output.
+- Menggunakan Git submodule.
+- Memisahkan core menjadi banyak package kecil.
+- Menduplikasi konfigurasi pada setiap package.
+- Menempatkan semua kode dalam folder `utils`.
+- Mengekspor internal module untuk kemudahan sementara.
 
 ### Ringkasan Keputusan
 
@@ -3588,29 +3566,29 @@ Informational gate dapat dipromosikan menjadi required gate setelah baseline dan
 
 ### Ringkasan Keputusan
 
-| Aspek | Keputusan |
-| --- | --- |
-| Required checks sebelum merge | Wajib lulus |
-| Branch utama | Dilindungi |
-| Second-person approval | Tidak wajib selama solo development |
-| Lines coverage | Minimum 85% |
-| Functions coverage | Minimum 85% |
-| Statements coverage | Minimum 85% |
-| Branches coverage | Minimum 80% |
-| Critical behaviour tests | Wajib |
-| Node.js CI matrix | Node.js 22 dan 24 |
-| Shared storage contract test | Wajib bagi semua adapter |
-| Database integration test | Menggunakan database nyata |
-| Package tarball smoke test | Wajib |
-| Dataset compatibility fixtures | Wajib |
-| Benchmark awal | Informational |
-| Performance blocker | Setelah baseline stabil |
-| Changeset | Wajib untuk perubahan package |
-| Critical runtime vulnerability | Memblokir release |
-| Documentation update | Wajib untuk perubahan kontrak |
-| Merge gate dan release gate | Dipisahkan |
-| Release source | Branch `main` |
-| Automated publishing | Hanya setelah seluruh gate lulus |
+| Aspek                          | Keputusan                           |
+| ------------------------------ | ----------------------------------- |
+| Required checks sebelum merge  | Wajib lulus                         |
+| Branch utama                   | Dilindungi                          |
+| Second-person approval         | Tidak wajib selama solo development |
+| Lines coverage                 | Minimum 85%                         |
+| Functions coverage             | Minimum 85%                         |
+| Statements coverage            | Minimum 85%                         |
+| Branches coverage              | Minimum 80%                         |
+| Critical behaviour tests       | Wajib                               |
+| Node.js CI matrix              | Node.js 22 dan 24                   |
+| Shared storage contract test   | Wajib bagi semua adapter            |
+| Database integration test      | Menggunakan database nyata          |
+| Package tarball smoke test     | Wajib                               |
+| Dataset compatibility fixtures | Wajib                               |
+| Benchmark awal                 | Informational                       |
+| Performance blocker            | Setelah baseline stabil             |
+| Changeset                      | Wajib untuk perubahan package       |
+| Critical runtime vulnerability | Memblokir release                   |
+| Documentation update           | Wajib untuk perubahan kontrak       |
+| Merge gate dan release gate    | Dipisahkan                          |
+| Release source                 | Branch `main`                       |
+| Automated publishing           | Hanya setelah seluruh gate lulus    |
 
 ## 10. Roadmap dan kriteria rilis
 
@@ -3993,20 +3971,20 @@ Sebuah milestone dianggap selesai hanya jika:
 
 ### Ringkasan Keputusan
 
-| Aspek | Keputusan |
-| --- | --- |
-| Rilis MVP | `v0.1.0` |
-| Fokus MVP | Core dan memory/JSON store |
-| Database adapter pada MVP | Tidak wajib |
-| Storage contract pada MVP | Wajib |
-| Milestone pertama | Repository foundation |
-| Adapter database pertama | PostgreSQL |
-| Importer | Setelah PostgreSQL schema stabil |
-| MySQL dan MongoDB | Setelah kontrak terbukti |
-| Fitur lanjutan | Berdasarkan penggunaan dan benchmark |
-| Makna `1.0.0` | Stabilitas public contract |
-| Database minimum menuju `1.0.0` | Satu adapter resmi yang stabil |
-| Definition of done | Code, tests, docs, dan quality gates |
+| Aspek                           | Keputusan                            |
+| ------------------------------- | ------------------------------------ |
+| Rilis MVP                       | `v0.1.0`                             |
+| Fokus MVP                       | Core dan memory/JSON store           |
+| Database adapter pada MVP       | Tidak wajib                          |
+| Storage contract pada MVP       | Wajib                                |
+| Milestone pertama               | Repository foundation                |
+| Adapter database pertama        | PostgreSQL                           |
+| Importer                        | Setelah PostgreSQL schema stabil     |
+| MySQL dan MongoDB               | Setelah kontrak terbukti             |
+| Fitur lanjutan                  | Berdasarkan penggunaan dan benchmark |
+| Makna `1.0.0`                   | Stabilitas public contract           |
+| Database minimum menuju `1.0.0` | Satu adapter resmi yang stabil       |
+| Definition of done              | Code, tests, docs, dan quality gates |
 
 ---
 
@@ -4035,11 +4013,11 @@ Sebuah milestone dianggap selesai hanya jika:
 
 ## Riwayat perubahan
 
-| Tanggal    | Perubahan                                            |
-| ---------- | ---------------------------------------------------- |
-| 2026-07-11 | Draft awal dibuat dari sepuluh topik fondasi proyek. |
-| 2026-07-12 | Menetapkan arsitektur internal `region-kit`.         |
+| Tanggal    | Perubahan                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| 2026-07-11 | Draft awal dibuat dari sepuluh topik fondasi proyek.                                        |
+| 2026-07-12 | Menetapkan arsitektur internal `region-kit`.                                                |
 | 2026-07-12 | Merevisi arsitektur untuk storage adapter dan menetapkan penyimpanan serta distribusi data. |
-| 2026-07-12 | Menetapkan public API, pagination, traversal, lifecycle, dan error behaviour. |
-| 2026-07-12 | Menetapkan testing standards, compatibility checks, merge gates, dan release gates. |
-| 2026-07-12 | Menetapkan roadmap MVP, milestone pasca-MVP, dan kriteria menuju `1.0.0`. |
+| 2026-07-12 | Menetapkan public API, pagination, traversal, lifecycle, dan error behaviour.               |
+| 2026-07-12 | Menetapkan testing standards, compatibility checks, merge gates, dan release gates.         |
+| 2026-07-12 | Menetapkan roadmap MVP, milestone pasca-MVP, dan kriteria menuju `1.0.0`.                   |
