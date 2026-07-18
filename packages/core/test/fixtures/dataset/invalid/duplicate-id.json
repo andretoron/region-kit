@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetVersion": "2026.1.0",
+  "country": {
+    "code": "ID",
+    "name": "Indonesia"
+  },
+  "source": {
+    "id": "example",
+    "name": "Example Dataset"
+  },
+  "generatedAt": "2026-07-01T09:00:00.000Z",
+  "regions": [
+    {
+      "id": "ID",
+      "code": "ID",
+      "name": "Indonesia",
+      "level": 0,
+      "type": "country",
+      "parentId": null
+    },
+    {
+      "id": "duplicate",
+      "code": "A",
+      "name": "Region A",
+      "level": 1,
+      "type": "province",
+      "parentId": "ID"
+    },
+    {
+      "id": "duplicate",
+      "code": "B",
+      "name": "Region B",
+      "level": 1,
+      "type": "province",
+      "parentId": "ID"
+    }
+  ]
+}
