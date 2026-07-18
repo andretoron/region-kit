@@ -11,5 +11,6 @@ describe("public entry point", () => {
     expect(module).not.toHaveProperty("isSupportedDatasetSchemaVersion");
     expect(module).not.toHaveProperty("parseDatasetSchemaVersion");
     expect(module).not.toHaveProperty("validateDatasetStructure");
+    expect(module).not.toHaveProperty("validateDatasetHierarchy");
   });
 });
