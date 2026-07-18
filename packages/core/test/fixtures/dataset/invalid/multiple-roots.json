@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetVersion": "2026.1.0",
+  "country": {
+    "code": "ID",
+    "name": "Indonesia"
+  },
+  "source": {
+    "id": "example",
+    "name": "Example Dataset"
+  },
+  "generatedAt": "2026-07-01T09:00:00.000Z",
+  "regions": [
+    {
+      "id": "root-a",
+      "code": "A",
+      "name": "Root A",
+      "level": 0,
+      "type": "country",
+      "parentId": null
+    },
+    {
+      "id": "root-b",
+      "code": "B",
+      "name": "Root B",
+      "level": 0,
+      "type": "country",
+      "parentId": null
+    }
+  ]
+}

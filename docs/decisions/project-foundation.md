@@ -255,10 +255,6 @@ Daftar tersebut bukan jaminan integrasi khusus. Framework hanya bertindak sebaga
 | Filesystem API           | Diekspos melalui package utama      |
 | Ketergantungan framework | Tidak ada                           |
 
-Exit code: 0
-Wall time: 0.3 seconds
-Output:
-
 ## 3. Model Data Wilayah
 
 **Status:** Disepakati
@@ -828,19 +824,18 @@ Import CLI belum wajib menjadi bagian core MVP. Tool tersebut dikembangkan setel
 
 ### Error Model
 
-`region-kit` menggunakan error class dan stable error code. Selain error dataset, dukungan storage membutuhkan kategori seperti:
+`region-kit` menggunakan error class dan stable error code. Kontrak yang telah ditetapkan pada Milestone 1 adalah:
 
 ```text
 RegionKitError
-├── DatasetLoadError
-├── DatasetParseError
-├── DatasetValidationError
-├── UnsupportedSchemaError
-├── RegionNotFoundError
-├── StorageConnectionError
-├── StorageCompatibilityError
-└── StorageQueryError
+└── DatasetValidationError
+    ├── code: "DATASET_INVALID"
+    └── issues: readonly DatasetValidationIssue[]
 ```
+
+`DatasetValidationError.code` adalah outer error code yang mengidentifikasi kategori error bagi consumer. Setiap `DatasetValidationIssue.code` menjelaskan pelanggaran kontrak yang spesifik bagi validator. Keduanya tidak menggunakan namespace tipe yang sama.
+
+Schema major yang tidak didukung tetap dilaporkan sebagai `DatasetValidationError` dengan issue code `"UNSUPPORTED_SCHEMA_VERSION"`. Error class operasional lain untuk loading, query, dan storage ditambahkan ketika milestone pemiliknya diimplementasikan, bukan dideklarasikan lebih awal tanpa perilaku yang stabil.
 
 Error storage harus membungkus error asli melalui `cause` tanpa membocorkan detail sensitif connection string atau credential.
 
@@ -857,26 +852,27 @@ Core tidak menggunakan dependency injection container. Dependency diberikan seca
 
 ### Struktur Package dan Source Awal
 
-Core MVP:
+Struktur source berkembang per milestone. Sampai fondasi Dataset Contract pada Milestone 1, source core terdiri dari entry point publik, kontrak dataset, aturan schema version, dan kontrak validation error:
 
 ```text
-region-kit/
-└── src/
-    ├── index.ts
-    ├── region-kit.ts
-    ├── dataset/
-    │   ├── loader.ts
-    │   ├── validator.ts
-    │   └── schema.ts
-    ├── store/
-    │   ├── region-store.ts
-    │   └── memory-region-store.ts
-    ├── query/
-    │   ├── types.ts
-    │   └── semantics.ts
-    ├── errors/
-    ├── types/
-    └── internal/
+packages/core/src/
+├── dataset/
+│   ├── index.ts
+│   ├── schema-version.test.ts
+│   ├── schema-version.ts
+│   ├── types.ts
+│   ├── validate-dataset-hierarchy.test.ts
+│   ├── validate-dataset-hierarchy.ts
+│   ├── validate-dataset-structure.test.ts
+│   ├── validate-dataset-structure.ts
+│   ├── validate-region-dataset.fixtures.test.ts
+│   ├── validate-region-dataset.test.ts
+│   └── validate-region-dataset.ts
+├── errors/
+│   ├── dataset-validation-error.ts
+│   ├── index.ts
+│   └── region-kit-error.ts
+└── index.ts
 ```
 
 Package adapter masa depan dapat berbentuk:
@@ -1081,14 +1077,16 @@ Adapter bertanggung jawab memeriksa kompatibilitas storage schema. Core dan impo
 
 ### Kompatibilitas Schema
 
-Aturan awal:
+`schemaVersion` menggunakan format ketat `MAJOR.MINOR.PATCH` dengan aturan:
 
-- Schema patch harus backward-compatible.
-- Schema minor hanya boleh menambahkan kemampuan secara backward-compatible.
-- Schema major dapat membawa breaking change.
-- Dataset dengan major schema yang tidak didukung harus ditolak.
+- Setiap komponen adalah bilangan bulat desimal non-negatif dan harus berada dalam rentang safe integer JavaScript.
+- Leading zero tidak diperbolehkan, kecuali komponen tersebut tepat `0`.
+- Prefix `v`, prerelease identifier, build metadata, whitespace tambahan, dan komponen yang hilang tidak diperbolehkan.
+- Major schema yang didukung pada Milestone 1 adalah `1`.
+- Minor dan patch dalam major yang didukung diterima; perubahan minor dan patch harus backward-compatible.
+- Perubahan major dapat membawa breaking change dan dataset dengan major yang tidak didukung harus ditolak.
 
-Aturan ini diformalisasi ketika JSON Schema atau kontrak validasi dibuat.
+Nilai yang malformed menghasilkan issue `"INVALID_FIELD_VALUE"` pada path `schemaVersion`. Nilai yang valid secara sintaksis tetapi menggunakan major yang tidak didukung menghasilkan issue `"UNSUPPORTED_SCHEMA_VERSION"` pada path yang sama. Parser, assertion, predicate, constant supported major, dan parsed schema version type merupakan detail internal validator dan bukan public API package.
 
 ### Kompresi
 
@@ -1550,21 +1548,34 @@ Aturan lifecycle:
 
 ### Error Behaviour
 
-Stable error code awal:
+Outer error code yang telah diimplementasikan pada Milestone 1:
 
 ```ts
-type RegionKitErrorCode =
-  | "DATASET_LOAD_FAILED"
-  | "DATASET_PARSE_FAILED"
-  | "DATASET_INVALID"
-  | "SCHEMA_UNSUPPORTED"
-  | "REGION_NOT_FOUND"
-  | "QUERY_INVALID"
-  | "STORAGE_CONNECTION_FAILED"
-  | "STORAGE_INCOMPATIBLE"
-  | "STORAGE_QUERY_FAILED"
-  | "INSTANCE_CLOSED";
+type RegionKitErrorCode = "DATASET_INVALID";
+
+type DatasetValidationIssueCode =
+  | "INVALID_DATASET"
+  | "MISSING_REQUIRED_FIELD"
+  | "INVALID_FIELD_TYPE"
+  | "INVALID_FIELD_VALUE"
+  | "UNSUPPORTED_SCHEMA_VERSION"
+  | "DUPLICATE_REGION_ID"
+  | "INVALID_ROOT_COUNT"
+  | "INVALID_ROOT_REGION"
+  | "MISSING_PARENT"
+  | "UNKNOWN_PARENT"
+  | "SELF_PARENT"
+  | "INVALID_CHILD_LEVEL"
+  | "HIERARCHY_CYCLE";
+
+interface DatasetValidationIssue {
+  readonly code: DatasetValidationIssueCode;
+  readonly path: readonly (string | number)[];
+  readonly message: string;
+}
 ```
+
+`DatasetValidationError` selalu membawa sedikitnya satu issue. Constructor menyalin dan membekukan array issue beserta path-nya agar error tidak berubah ketika input caller dimutasi. `RegionKitErrorCode` diperluas bersama implementasi error operasional pada milestone berikutnya.
 
 Aturan hasil dan error:
 
@@ -1575,44 +1586,33 @@ Aturan hasil dan error:
 - Input query tidak valid melempar `QueryValidationError`.
 - Kegagalan storage dibungkus dalam error storage yang sesuai dan dapat menyimpan error asli melalui `cause`.
 - Dataset tidak valid melempar `DatasetValidationError`.
-- Schema tidak didukung melempar `UnsupportedSchemaError`.
+- Dataset schema major yang tidak didukung melempar `DatasetValidationError` dengan issue `"UNSUPPORTED_SCHEMA_VERSION"`.
 - Query setelah instance ditutup melempar `RegionKitClosedError`.
 
 Error operasional menggunakan exception. Bentuk `{ success: false, error }` tidak digunakan sebagai return type universal.
 
 ### Export Surface
 
-Package utama hanya mengekspor kontrak yang memang diperlukan consumer atau adapter author.
+Package utama hanya mengekspor kontrak yang memang diperlukan consumer. Public export yang telah disepakati pada Milestone 1 adalah:
 
 ```ts
-export {
-  RegionKit,
-  RegionKitError,
-  DatasetLoadError,
-  DatasetValidationError,
-  UnsupportedSchemaError,
-  RegionNotFoundError,
-  QueryValidationError,
-  StorageConnectionError,
-  StorageCompatibilityError,
-  StorageQueryError,
-  RegionKitClosedError,
-};
+export { RegionKitError, DatasetValidationError };
+export { validateRegionDataset };
 
 export type {
+  DatasetCountry,
+  DatasetSource,
   Region,
   RegionDataset,
-  DatasetMetadata,
-  RegionStore,
-  RegionFilter,
-  SearchOptions,
-  QueryOptions,
-  RegionPage,
-  RegionSearchPage,
+  RegionKitErrorCode,
+  DatasetValidationIssue,
+  DatasetValidationIssueCode,
+  DatasetValidationPath,
+  DatasetValidationPathSegment,
 };
 ```
 
-Internal validator implementation, memory indexes, normalizer, dan storage-specific query tidak diekspor kecuali sengaja dijadikan extension contract.
+Schema parser, schema assertion, schema predicate, supported major constant, parsed schema version type, path formatter, structural validator, dan hierarchy validator tetap internal. API untuk loading, store, query, dan lifecycle ditambahkan pada milestone masing-masing setelah kontraknya stabil.
 
 ### Di Luar Public API MVP
 
@@ -1877,6 +1877,35 @@ Test runner resmi adalah Vitest.
 ```text
 vitest
 ```
+
+Vitest dan coverage provider dipasang sebagai shared development dependencies di root workspace agar seluruh package menggunakan versi tooling yang sama.
+
+Konfigurasi lintas-package menggunakan `test.projects` pada root `vitest.config.ts`:
+
+```ts
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    projects: ["packages/*/vitest.config.ts"],
+  },
+});
+```
+
+Setiap package menyediakan konfigurasi project untuk kebutuhan khususnya:
+
+```ts
+import { defineProject } from "vitest/config";
+
+export default defineProject({
+  test: {
+    name: "region-kit",
+    environment: "node",
+  },
+});
+```
+
+Pendekatan `test.projects` digunakan karena workspace configuration telah digantikan oleh projects sejak Vitest 3.2. File `vitest.workspace.ts` tidak digunakan agar repository tidak bergantung pada API yang telah deprecated.
 
 Perintah testing:
 
@@ -2377,7 +2406,7 @@ region-kit/
 ├── SECURITY.md
 ├── tsconfig.base.json
 ├── typedoc.json
-└── vitest.workspace.ts
+└── vitest.config.ts
 ```
 
 Tidak semua file harus dibuat sebelum dibutuhkan. Struktur tersebut merupakan target organisasi repository, bukan kewajiban membuat file kosong sejak awal.
@@ -2406,8 +2435,9 @@ Root repository bersifat private dan tidak dipublikasikan ke npm.
   "scripts": {
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
-    "test:coverage": "pnpm -r test:coverage",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
@@ -2449,52 +2479,45 @@ Nama folder internal tidak menentukan nama npm package.
 }
 ```
 
-Struktur package core:
+Struktur aktual package core sampai Milestone 1:
 
 ```text
 packages/core/
 ├── src/
 │   ├── dataset/
-│   │   ├── load-dataset-file.ts
-│   │   ├── parse-dataset.ts
-│   │   ├── validate-dataset.ts
-│   │   └── validation/
+│   │   ├── index.ts
+│   │   ├── schema-version.test.ts
+│   │   ├── schema-version.ts
+│   │   ├── types.ts
+│   │   ├── validate-dataset-hierarchy.test.ts
+│   │   ├── validate-dataset-hierarchy.ts
+│   │   ├── validate-dataset-structure.test.ts
+│   │   ├── validate-dataset-structure.ts
+│   │   ├── validate-region-dataset.fixtures.test.ts
+│   │   ├── validate-region-dataset.test.ts
+│   │   └── validate-region-dataset.ts
 │   ├── errors/
-│   │   ├── dataset-errors.ts
-│   │   ├── query-errors.ts
-│   │   ├── region-kit-error.ts
-│   │   └── storage-errors.ts
-│   ├── query/
-│   │   ├── normalize-search-text.ts
-│   │   ├── pagination.ts
-│   │   ├── sorting.ts
-│   │   └── types.ts
-│   ├── store/
-│   │   ├── memory/
-│   │   │   ├── build-indexes.ts
-│   │   │   ├── memory-region-store.ts
-│   │   │   └── memory-store-state.ts
-│   │   ├── region-store.ts
-│   │   └── store-capabilities.ts
-│   ├── types/
-│   │   ├── dataset.ts
-│   │   ├── metadata.ts
-│   │   ├── query.ts
-│   │   └── region.ts
-│   ├── index.ts
-│   └── region-kit.ts
+│   │   ├── dataset-validation-error.ts
+│   │   ├── index.ts
+│   │   └── region-kit-error.ts
+│   └── index.ts
 ├── test/
-│   ├── contract/
+│   ├── errors/
+│   │   └── dataset-validation-error.test.ts
 │   ├── fixtures/
-│   ├── integration/
+│   │   └── dataset/
+│   │       ├── compatibility/
+│   │       ├── invalid/
+│   │       └── valid/
 │   └── unit/
+│       └── index.test.ts
 ├── package.json
-├── README.md
 ├── tsconfig.json
 ├── tsconfig.build.json
-├── typedoc.json
 └── vitest.config.ts
 ```
+
+Folder store dan query ditambahkan ketika milestone terkait mulai diimplementasikan. Struktur di atas mencatat kondisi repository aktual dan bukan janji bahwa seluruh file MVP sudah tersedia.
 
 Struktur source mengikuti tanggung jawab domain, bukan jenis file teknis yang terlalu umum.
 
@@ -2530,35 +2553,27 @@ packages/core/src/index.ts
 `index.ts` hanya mengekspor public API yang telah disepakati.
 
 ```ts
-export { RegionKit } from "./region-kit.js";
-
-export {
-  RegionKitError,
-  DatasetLoadError,
-  DatasetValidationError,
-  UnsupportedSchemaError,
-  RegionNotFoundError,
-  QueryValidationError,
-  StorageConnectionError,
-  StorageCompatibilityError,
-  StorageQueryError,
-  RegionKitClosedError,
-} from "./errors/index.js";
+export { RegionKitError, DatasetValidationError } from "./errors/index.js";
 
 export type {
+  DatasetCountry,
+  DatasetSource,
   Region,
   RegionDataset,
-  DatasetMetadata,
-  RegionStore,
-  RegionFilter,
-  QueryOptions,
-  SearchOptions,
-  RegionPage,
-  RegionSearchPage,
-} from "./types/index.js";
+} from "./dataset/index.js";
+
+export { validateRegionDataset } from "./dataset/index.js";
+
+export type {
+  RegionKitErrorCode,
+  DatasetValidationIssue,
+  DatasetValidationIssueCode,
+  DatasetValidationPath,
+  DatasetValidationPathSegment,
+} from "./errors/index.js";
 ```
 
-Internal module tidak diekspor hanya karena tersedia di dalam `src`.
+Internal module tidak diekspor hanya karena tersedia di dalam `src`. Secara khusus, schema version helpers, `formatDatasetValidationPath()`, `validateDatasetStructure()`, dan `validateDatasetHierarchy()` tidak menjadi public export Milestone 1.
 
 Consumer tidak diperbolehkan menggunakan deep import:
 
@@ -2975,7 +2990,7 @@ Konfigurasi bersama ditempatkan di root:
 eslint.config.js
 .prettierrc.json
 tsconfig.base.json
-vitest.workspace.ts
+vitest.config.ts
 typedoc.json
 ```
 
@@ -3633,6 +3648,8 @@ Seluruh command berhasil pada repository awal dan CI.
 
 ### Milestone 1 — Dataset Contract
 
+**Status:** Diimplementasikan
+
 **Tujuan:** menetapkan input resmi `region-kit`.
 
 Cakupan:
@@ -3643,18 +3660,21 @@ Cakupan:
 - Schema version rules.
 - Validator struktural.
 - Validator hierarki.
+- Public validator `validateRegionDataset()`.
 - Fixture valid, invalid, dan compatibility.
-- Error validation yang jelas.
-- JSON Schema jika dipilih sebagai representasi formal.
+- `DatasetValidationError` dengan detail issue dan path.
+- Unit dan integration tests.
 
 Kriteria selesai:
 
-- Dataset valid diterima.
-- Kasus invalid utama ditolak.
-- Validator tidak memutasi input.
-- Error menunjukkan penyebab yang dapat ditindaklanjuti.
-- Output `region_squirrel` dapat dihasilkan atau dikonversi sesuai kontrak.
-- Dataset Indonesia–BPS representatif lulus validasi.
+- Contract types tersedia melalui public API.
+- Schema `1.x.x` yang valid diterima dan major lain ditolak.
+- Structural dan hierarchy validation diterapkan.
+- `validateRegionDataset(input: unknown)` tersedia melalui public API.
+- Validator mengembalikan object input yang sama tanpa mutasi.
+- Error menyediakan code, path, dan message yang dapat ditindaklanjuti.
+- Fixture valid, invalid, dan compatibility diuji end-to-end.
+- Unit tests, integration tests, build, dan package validation lulus.
 
 ### Milestone 2 — Memory Store
 
@@ -4021,3 +4041,7 @@ Sebuah milestone dianggap selesai hanya jika:
 | 2026-07-12 | Menetapkan public API, pagination, traversal, lifecycle, dan error behaviour.               |
 | 2026-07-12 | Menetapkan testing standards, compatibility checks, merge gates, dan release gates.         |
 | 2026-07-12 | Menetapkan roadmap MVP, milestone pasca-MVP, dan kriteria menuju `1.0.0`.                   |
+| 2026-07-13 | Menyesuaikan konfigurasi Vitest dari workspace menjadi projects sesuai API Vitest terbaru.  |
+| 2026-07-13 | Memindahkan dokumen fondasi ke struktur keputusan arsitektur repository.                    |
+| 2026-07-13 | Menambahkan lisensi serta panduan dan template kontribusi repository.                       |
+| 2026-07-18 | Mencatat implementasi Milestone 1 — Dataset Contract dan Validation.                        |

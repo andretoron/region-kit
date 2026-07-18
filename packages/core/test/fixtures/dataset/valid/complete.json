@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.2.3",
+  "datasetVersion": "2026.7.0",
+  "country": {
+    "code": "ID",
+    "name": "Indonesia",
+    "futureCountryMetadata": true
+  },
+  "source": {
+    "id": "example",
+    "name": "Example Administrative Dataset",
+    "url": "https://example.com/datasets/regions",
+    "retrievedAt": "2026-07-01T08:00:00.000Z",
+    "license": "Example License"
+  },
+  "generatedAt": "2026-07-01T09:00:00.000Z",
+  "regions": [
+    {
+      "id": "ID",
+      "code": "ID",
+      "name": "Indonesia",
+      "level": 0,
+      "type": "country",
+      "parentId": null
+    },
+    {
+      "id": "ID-JB",
+      "code": "32",
+      "name": "Jawa Barat",
+      "level": 1,
+      "type": "province",
+      "parentId": "ID",
+      "aliases": ["Jabar"],
+      "attributes": {
+        "sourceCode": "32"
+      }
+    },
+    {
+      "id": "ID-JB-BDG",
+      "code": "3273",
+      "name": "Kota Bandung",
+      "level": 2,
+      "type": "city",
+      "parentId": "ID-JB",
+      "aliases": ["Bandung"],
+      "attributes": {
+        "sourceCode": "3273",
+        "classification": {
+          "urban": true
+        }
+      },
+      "futureRegionMetadata": {
+        "experimental": true
+      }
+    },
+    {
+      "id": "ID-JB-BKS",
+      "code": "3275",
+      "name": "Kota Bekasi",
+      "level": 2,
+      "type": "city",
+      "parentId": "ID-JB"
+    }
+  ],
+  "futureDatasetMetadata": {
+    "supportedLater": true
+  }
+}

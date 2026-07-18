@@ -1,0 +1,32 @@
+{
+  "name": "region-kit",
+  "version": "0.0.0",
+  "description": "A framework-agnostic Node.js library for querying and navigating administrative region datasets.",
+  "license": "ISC",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "pnpm clean && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:package": "publint && attw --pack --profile esm-only"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1"
+  }
+}

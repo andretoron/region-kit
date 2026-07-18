@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a capability or improvement for region-kit.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the user problem or limitation this proposal addresses.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the desired behaviour without relying on internal implementation details.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe current workarounds or alternative designs.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add examples, constraints, or related references.

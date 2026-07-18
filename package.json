@@ -1,19 +1,37 @@
 {
-  "name": "region-kit",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "region-kit-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.11.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "docs": "pnpm --filter region-kit docs",
+    "check:package": "pnpm -r check:package",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm check:package",
+    "changeset": "changeset",
+    "changeset:status": "changeset status",
+    "version-packages": "changeset version"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "@types/node": "^26.1.1",
-    "tsdown": "^0.22.4",
-    "tsx": "^4.23.0",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.10"
+    "@arethetypeswrong/cli": "0.18.5",
+    "@changesets/cli": "2.31.0",
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "4.1.10",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "^17.7.0",
+    "prettier": "3.9.5",
+    "publint": "0.3.21",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "4.1.10"
   }
 }
