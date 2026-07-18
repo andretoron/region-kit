@@ -341,4 +341,444 @@ describe("validateDatasetHierarchy", () => {
       ]),
     );
   });
+
+  it("accepts a child level greater than its parent level", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "ID-JB",
+        code: "32",
+        name: "Jawa Barat",
+        level: 2,
+        type: "province",
+        parentId: "ID",
+      }),
+    ]);
+
+    expect(() => validateDatasetHierarchy(dataset)).not.toThrow();
+  });
+
+  it("rejects a child with the same level as its parent", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "ID-JB",
+        code: "32",
+        name: "Jawa Barat",
+        level: 0,
+        type: "province",
+        parentId: "ID",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "INVALID_CHILD_LEVEL",
+        path: ["regions", 1, "level"],
+        message:
+          'Region "ID-JB" must have a level greater than its parent "ID".',
+      }),
+    );
+  });
+
+  it("rejects a child level lower than its parent level", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "parent",
+        code: "P",
+        name: "Parent",
+        level: 3,
+        type: "province",
+        parentId: "ID",
+      }),
+      createRegion({
+        id: "child",
+        code: "C",
+        name: "Child",
+        level: 2,
+        type: "city",
+        parentId: "parent",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "INVALID_CHILD_LEVEL",
+        path: ["regions", 2, "level"],
+      }),
+    );
+  });
+
+  it("does not compare levels when the parent is unknown", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "child",
+        code: "C",
+        name: "Child",
+        level: 0,
+        type: "province",
+        parentId: "unknown",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "UNKNOWN_PARENT",
+        path: ["regions", 1, "parentId"],
+      }),
+    );
+
+    expect(error.issues).not.toContainEqual(
+      expect.objectContaining({
+        code: "INVALID_CHILD_LEVEL",
+        path: ["regions", 1, "level"],
+      }),
+    );
+  });
+
+  it("does not compare levels when the parent id is ambiguous", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "duplicate",
+        code: "D1",
+        name: "Duplicate 1",
+        level: 1,
+        type: "province",
+        parentId: "ID",
+      }),
+      createRegion({
+        id: "duplicate",
+        code: "D2",
+        name: "Duplicate 2",
+        level: 2,
+        type: "city",
+        parentId: "ID",
+      }),
+      createRegion({
+        id: "child",
+        code: "C",
+        name: "Child",
+        level: 0,
+        type: "district",
+        parentId: "duplicate",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "DUPLICATE_REGION_ID",
+        path: ["regions", 2, "id"],
+      }),
+    );
+    expect(error.issues).not.toContainEqual(
+      expect.objectContaining({
+        code: "INVALID_CHILD_LEVEL",
+        path: ["regions", 3, "level"],
+      }),
+    );
+    expect(error.issues).not.toContainEqual(
+      expect.objectContaining({
+        code: "HIERARCHY_CYCLE",
+      }),
+    );
+  });
+
+  it("detects a two-region hierarchy cycle", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "A",
+        code: "A",
+        name: "A",
+        level: 1,
+        type: "province",
+        parentId: "B",
+      }),
+      createRegion({
+        id: "B",
+        code: "B",
+        name: "B",
+        level: 2,
+        type: "city",
+        parentId: "A",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "HIERARCHY_CYCLE",
+      }),
+    );
+  });
+
+  it("detects a longer hierarchy cycle", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "A",
+        code: "A",
+        name: "A",
+        level: 1,
+        type: "province",
+        parentId: "B",
+      }),
+      createRegion({
+        id: "B",
+        code: "B",
+        name: "B",
+        level: 2,
+        type: "city",
+        parentId: "C",
+      }),
+      createRegion({
+        id: "C",
+        code: "C",
+        name: "C",
+        level: 3,
+        type: "district",
+        parentId: "A",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(
+      error.issues.filter((issue) => issue.code === "HIERARCHY_CYCLE"),
+    ).toHaveLength(1);
+  });
+
+  it("reports a cycle once when another region leads into it", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "tail",
+        code: "T",
+        name: "Tail",
+        level: 1,
+        type: "province",
+        parentId: "A",
+      }),
+      createRegion({
+        id: "A",
+        code: "A",
+        name: "A",
+        level: 2,
+        type: "city",
+        parentId: "B",
+      }),
+      createRegion({
+        id: "B",
+        code: "B",
+        name: "B",
+        level: 3,
+        type: "district",
+        parentId: "A",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(
+      error.issues.filter((issue) => issue.code === "HIERARCHY_CYCLE"),
+    ).toHaveLength(1);
+  });
+
+  it("reports separate hierarchy cycles", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+
+      createRegion({
+        id: "A",
+        code: "A",
+        name: "A",
+        level: 1,
+        type: "province",
+        parentId: "B",
+      }),
+      createRegion({
+        id: "B",
+        code: "B",
+        name: "B",
+        level: 2,
+        type: "city",
+        parentId: "A",
+      }),
+
+      createRegion({
+        id: "C",
+        code: "C",
+        name: "C",
+        level: 1,
+        type: "province",
+        parentId: "D",
+      }),
+      createRegion({
+        id: "D",
+        code: "D",
+        name: "D",
+        level: 2,
+        type: "city",
+        parentId: "C",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(
+      error.issues.filter((issue) => issue.code === "HIERARCHY_CYCLE"),
+    ).toHaveLength(2);
+  });
+
+  it("detects a cycle in a unique subgraph when another id is duplicated", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "duplicate",
+        code: "D1",
+        name: "Duplicate 1",
+        level: 1,
+        type: "province",
+        parentId: "ID",
+      }),
+      createRegion({
+        id: "duplicate",
+        code: "D2",
+        name: "Duplicate 2",
+        level: 2,
+        type: "city",
+        parentId: "ID",
+      }),
+      createRegion({
+        id: "A",
+        code: "A",
+        name: "A",
+        level: 1,
+        type: "province",
+        parentId: "B",
+      }),
+      createRegion({
+        id: "B",
+        code: "B",
+        name: "B",
+        level: 2,
+        type: "city",
+        parentId: "A",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "DUPLICATE_REGION_ID",
+        path: ["regions", 2, "id"],
+      }),
+    );
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "HIERARCHY_CYCLE",
+      }),
+    );
+  });
+
+  it("does not report self-parent as a separate hierarchy cycle", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "self",
+        code: "S",
+        name: "Self",
+        level: 1,
+        type: "province",
+        parentId: "self",
+      }),
+    ]);
+
+    const error = captureHierarchyError(dataset);
+
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        code: "SELF_PARENT",
+        path: ["regions", 1, "parentId"],
+      }),
+    );
+
+    expect(error.issues).not.toContainEqual(
+      expect.objectContaining({
+        code: "HIERARCHY_CYCLE",
+      }),
+    );
+    expect(error.issues).not.toContainEqual(
+      expect.objectContaining({
+        code: "INVALID_CHILD_LEVEL",
+        path: ["regions", 1, "level"],
+      }),
+    );
+  });
+
+  it("does not report a cycle for a valid tree", () => {
+    const dataset = createValidDataset([
+      createRegion(),
+      createRegion({
+        id: "province",
+        code: "P",
+        name: "Province",
+        level: 1,
+        type: "province",
+        parentId: "ID",
+      }),
+      createRegion({
+        id: "city-a",
+        code: "A",
+        name: "City A",
+        level: 2,
+        type: "city",
+        parentId: "province",
+      }),
+      createRegion({
+        id: "city-b",
+        code: "B",
+        name: "City B",
+        level: 2,
+        type: "city",
+        parentId: "province",
+      }),
+    ]);
+
+    expect(() => validateDatasetHierarchy(dataset)).not.toThrow();
+  });
+
+  it("handles a deeply nested hierarchy", () => {
+    const regions: Region[] = [createRegion()];
+
+    for (let index = 1; index <= 10_000; index += 1) {
+      regions.push(
+        createRegion({
+          id: `region-${index}`,
+          code: `${index}`,
+          name: `Region ${index}`,
+          level: index,
+          type: "administrative",
+          parentId: index === 1 ? "ID" : `region-${index - 1}`,
+        }),
+      );
+    }
+
+    const dataset = createValidDataset(regions);
+
+    expect(() => validateDatasetHierarchy(dataset)).not.toThrow();
+  });
 });
