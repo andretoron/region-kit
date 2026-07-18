@@ -5,6 +5,8 @@ export type {
   RegionDataset,
 } from "./dataset/index.js";
 
+export { validateRegionDataset } from "./dataset/index.js";
+
 export { RegionKitError } from "./errors/index.js";
 export type { RegionKitErrorCode } from "./errors/index.js";
 
