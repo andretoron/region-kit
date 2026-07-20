@@ -3,6 +3,7 @@ export type {
   DatasetSource,
   Region,
   RegionDataset,
+  DatasetMetadata,
 } from "./dataset/index.js";
 
 export { validateRegionDataset } from "./dataset/index.js";
@@ -18,3 +19,14 @@ export type {
   DatasetValidationPath,
   DatasetValidationPathSegment,
 } from "./errors/index.js";
+
+export type {
+  FindByCodeOptions,
+  FindByNameOptions,
+  PageInfo,
+  PaginationOptions,
+  RegionPage,
+  TextMatch,
+} from "./query/index.js";
+
+export type { RegionStore } from "./store/index.js";
