@@ -30,3 +30,4 @@ export type {
 } from "./query/index.js";
 
 export type { RegionStore } from "./store/index.js";
+export { MemoryRegionStore } from "./store/index.js";
