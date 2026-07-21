@@ -21,11 +21,14 @@ export interface DatasetSource {
   readonly retrievedAt?: string;
 }
 
-export interface RegionDataset {
+export interface DatasetMetadata {
   readonly schemaVersion: string;
   readonly datasetVersion: string;
   readonly country: DatasetCountry;
   readonly source: DatasetSource;
   readonly generatedAt: string;
+}
+
+export interface RegionDataset extends DatasetMetadata {
   readonly regions: readonly Region[];
 }

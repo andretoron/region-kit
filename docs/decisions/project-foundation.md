@@ -3678,6 +3678,8 @@ Kriteria selesai:
 
 ### Milestone 2 — Memory Store
 
+**Status:** Diimplementasikan
+
 **Tujuan:** menyediakan implementasi storage default.
 
 Cakupan:
@@ -3698,6 +3700,10 @@ Kriteria selesai:
 - Internal state tidak dapat dimutasi melalui hasil public.
 - Dataset invalid ditolak sebelum store dibuat.
 - Penggunaan memory dan waktu inisialisasi telah diukur.
+
+Baseline penggunaan memory dan waktu inisialisasi dicatat pada
+[`memory-store-milestone-2.json`](../benchmarks/memory-store-milestone-2.json).
+Benchmark ini masih bersifat informational dan menggunakan dataset sintetis.
 
 ### Milestone 3 — Public Query API
 
@@ -4045,3 +4051,4 @@ Sebuah milestone dianggap selesai hanya jika:
 | 2026-07-13 | Memindahkan dokumen fondasi ke struktur keputusan arsitektur repository.                    |
 | 2026-07-13 | Menambahkan lisensi serta panduan dan template kontribusi repository.                       |
 | 2026-07-18 | Mencatat implementasi Milestone 1 — Dataset Contract dan Validation.                        |
+| 2026-07-21 | Mencatat implementasi Milestone 2 — Memory Store dan benchmark awal.                        |

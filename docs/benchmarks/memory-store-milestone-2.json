@@ -1,0 +1,58 @@
+{
+  "benchmark": "memory-store-milestone-2",
+  "informational": true,
+  "generatedAt": "2026-07-21T13:11:17.450Z",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "architecture": "x64",
+    "cpu": "11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz",
+    "logicalCpuCount": 12,
+    "totalSystemMemoryMiB": 32505.938
+  },
+  "dataset": {
+    "kind": "synthetic-flat-hierarchy",
+    "regionCount": 10000,
+    "serializedBytes": 1679610,
+    "serializedMiB": 1.602
+  },
+  "configuration": {
+    "warmupIterations": 3,
+    "timingIterations": 10,
+    "memoryIterations": 5
+  },
+  "timingsMilliseconds": {
+    "validation": {
+      "minimum": 13.798,
+      "median": 23.443,
+      "maximum": 67.721
+    },
+    "indexConstruction": {
+      "minimum": 32.015,
+      "median": 43.955,
+      "maximum": 54.784
+    },
+    "storeInitialization": {
+      "minimum": 57.843,
+      "median": 91.999,
+      "maximum": 121.819
+    }
+  },
+  "retainedHeapDelta": {
+    "bytes": {
+      "minimum": 8753000,
+      "median": 8754208,
+      "maximum": 8754424
+    },
+    "mebibytes": {
+      "minimum": 8.348,
+      "median": 8.349,
+      "maximum": 8.349
+    }
+  },
+  "notes": [
+    "Store initialization includes validation, snapshot cloning, metadata projection, and index construction.",
+    "Retained heap measurements are process-level estimates and can vary between runs.",
+    "This synthetic dataset is not a replacement for a future benchmark using a locked production dataset."
+  ]
+}
