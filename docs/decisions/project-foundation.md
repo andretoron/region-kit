@@ -3700,7 +3700,7 @@ Kriteria selesai:
 - Internal state tidak dapat dimutasi melalui hasil public.
 - Dataset invalid ditolak sebelum store dibuat.
 - Penggunaan memory dan waktu inisialisasi telah diukur.
-  
+
 Baseline penggunaan memory dan waktu inisialisasi dicatat pada
 [`memory-store-milestone-2.json`](../benchmarks/memory-store-milestone-2.json).
 Benchmark ini masih bersifat informational dan menggunakan dataset sintetis.
