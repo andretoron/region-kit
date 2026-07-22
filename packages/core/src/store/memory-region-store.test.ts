@@ -60,53 +60,59 @@ describe("MemoryRegionStore", () => {
     await store.close();
   });
 
-  it("rejects an empty region id", () => {
+  it("rejects an empty region id", async () => {
     const store = createStore();
 
-    expect(() => store.getById("")).toThrow(QueryValidationError);
+    await expect(store.getById("")).rejects.toBeInstanceOf(
+      QueryValidationError,
+    );
   });
 
-  it("rejects an empty code", () => {
+  it("rejects an empty code", async () => {
     const store = createStore();
 
-    expect(() => store.findByCode("")).toThrow(QueryValidationError);
+    await expect(store.findByCode("")).rejects.toBeInstanceOf(
+      QueryValidationError,
+    );
   });
 
-  it("rejects a blank name", () => {
+  it("rejects a blank name", async () => {
     const store = createStore();
 
-    expect(() => store.findByName("   ")).toThrow(QueryValidationError);
+    await expect(store.findByName("   ")).rejects.toBeInstanceOf(
+      QueryValidationError,
+    );
   });
 
   it.each([{ limit: 0 }, { limit: 1001 }, { offset: -1 }])(
     "rejects invalid pagination %#",
-    (options) => {
+    async (options) => {
       const store = createStore();
 
-      expect(() => store.findByCode("01", options)).toThrow(
+      await expect(store.findByCode("01", options)).rejects.toBeInstanceOf(
         QueryValidationError,
       );
     },
   );
 
-  it("rejects an invalid text match", () => {
+  it("rejects an invalid text match", async () => {
     const store = createStore();
 
-    expect(() =>
+    await expect(
       store.findByName("Bandung", {
         match: "fuzzy" as never,
       }),
-    ).toThrow(QueryValidationError);
+    ).rejects.toBeInstanceOf(QueryValidationError);
   });
 
-  it("rejects an invalid sort field", () => {
+  it("rejects an invalid sort field", async () => {
     const store = createStore();
 
-    expect(() =>
+    await expect(
       store.findByCode("01", {
         sortBy: "id" as never,
       }),
-    ).toThrow(QueryValidationError);
+    ).rejects.toBeInstanceOf(QueryValidationError);
   });
 
   it("sorts code lookup by code and then id by default", async () => {

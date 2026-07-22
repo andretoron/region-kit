@@ -2,9 +2,12 @@ import { QueryValidationError } from "../errors/index.js";
 import { DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT } from "./constants.js";
 
 import type {
+  DescendantOptions,
   FindByCodeOptions,
   FindByNameOptions,
   PaginationOptions,
+  QueryOptions,
+  RegionFilter,
   RegionSortField,
   SortDirection,
   SortOptions,
@@ -22,6 +25,24 @@ const SORT_DIRECTIONS = new Set<SortDirection>(["asc", "desc"]);
 
 const TEXT_MATCHES = new Set<TextMatch>(["exact", "prefix", "contains"]);
 
+export interface ResolvedFilterQuery {
+  readonly criteria: RegionFilter;
+  readonly options: QueryOptions;
+  readonly pagination: ResolvedPaginationOptions;
+  readonly sort: ResolvedSortOptions;
+}
+
+export interface ResolvedChildrenQuery {
+  readonly options: QueryOptions;
+  readonly pagination: ResolvedPaginationOptions;
+  readonly sort: ResolvedSortOptions;
+}
+
+export interface ResolvedDescendantQuery {
+  readonly options: DescendantOptions;
+  readonly pagination: ResolvedPaginationOptions;
+  readonly sort: ResolvedSortOptions;
+}
 export interface ResolvedPaginationOptions {
   readonly limit: number;
   readonly offset: number;
@@ -44,13 +65,16 @@ export interface ResolvedFindByNameQuery {
   readonly sort: ResolvedSortOptions;
 }
 
-function validateOptionsObject<T extends object>(value: unknown): T {
+function validateOptionsObject<T extends object>(
+  value: unknown,
+  parameter = "options",
+): T {
   if (value === undefined) {
     return {} as T;
   }
 
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new QueryValidationError("options", "Expected an object.");
+    throw new QueryValidationError(parameter, "Expected an object.");
   }
 
   return value as T;
@@ -81,12 +105,64 @@ function validateOptionalNonNegativeInteger(
     return;
   }
 
+  validateNonNegativeInteger(value, parameter);
+}
+
+function validateNonNegativeInteger(value: unknown, parameter: string): void {
   if (!Number.isInteger(value) || (value as number) < 0) {
     throw new QueryValidationError(
       parameter,
       "Expected a non-negative integer.",
     );
   }
+}
+
+function validateOptionalStringArray(value: unknown, parameter: string): void {
+  if (value === undefined) {
+    return;
+  }
+
+  if (!Array.isArray(value)) {
+    throw new QueryValidationError(
+      parameter,
+      "Expected an array of non-empty strings.",
+    );
+  }
+
+  value.forEach((item, index) => {
+    validateRequiredString(item, `${parameter}[${index}]`);
+  });
+}
+
+function validateOptionalNonNegativeIntegerArray(
+  value: unknown,
+  parameter: string,
+): void {
+  if (value === undefined) {
+    return;
+  }
+
+  if (!Array.isArray(value)) {
+    throw new QueryValidationError(
+      parameter,
+      "Expected an array of non-negative integers.",
+    );
+  }
+
+  value.forEach((item, index) => {
+    validateNonNegativeInteger(item, `${parameter}[${index}]`);
+  });
+}
+
+function validateOptionalNullableString(
+  value: unknown,
+  parameter: string,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  validateRequiredString(value, parameter);
 }
 
 export function resolvePaginationOptions(
@@ -195,5 +271,68 @@ export function resolveFindByNameQuery(
     options: queryOptions,
     pagination: resolvePaginationOptions(queryOptions),
     sort: resolveSortOptions(queryOptions, "name"),
+  });
+}
+
+export function resolveFilterQuery(
+  criteria: unknown,
+  options: unknown,
+): ResolvedFilterQuery {
+  const regionFilter = validateOptionsObject<RegionFilter>(
+    criteria,
+    "criteria",
+  );
+
+  validateOptionalStringArray(regionFilter.ids, "criteria.ids");
+  validateOptionalStringArray(regionFilter.codes, "criteria.codes");
+  validateOptionalNullableString(regionFilter.parentId, "criteria.parentId");
+  validateOptionalNonNegativeIntegerArray(
+    regionFilter.levels,
+    "criteria.levels",
+  );
+  validateOptionalStringArray(regionFilter.types, "criteria.types");
+
+  const queryOptions = validateOptionsObject<QueryOptions>(options, "options");
+
+  return Object.freeze({
+    criteria: regionFilter,
+    options: queryOptions,
+    pagination: resolvePaginationOptions(queryOptions),
+    sort: resolveSortOptions(queryOptions, "level"),
+  });
+}
+
+export function resolveChildrenQuery(
+  id: unknown,
+  options: unknown,
+): ResolvedChildrenQuery {
+  validateRegionId(id);
+
+  const queryOptions = validateOptionsObject<QueryOptions>(options, "options");
+
+  return Object.freeze({
+    options: queryOptions,
+    pagination: resolvePaginationOptions(queryOptions),
+    sort: resolveSortOptions(queryOptions, "code"),
+  });
+}
+
+export function resolveDescendantQuery(
+  id: unknown,
+  options: unknown,
+): ResolvedDescendantQuery {
+  validateRegionId(id);
+
+  const descendantOptions = validateOptionsObject<DescendantOptions>(
+    options,
+    "options",
+  );
+
+  validateOptionalNonNegativeInteger(descendantOptions.maxDepth, "maxDepth");
+
+  return Object.freeze({
+    options: descendantOptions,
+    pagination: resolvePaginationOptions(descendantOptions),
+    sort: resolveSortOptions(descendantOptions, "level"),
   });
 }

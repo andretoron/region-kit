@@ -2,6 +2,7 @@ import type { Region } from "../dataset/index.js";
 import type {
   FindByNameOptions,
   PaginationOptions,
+  RegionFilter,
   RegionPage,
   TextMatch,
 } from "../query/index.js";
@@ -112,5 +113,48 @@ export function createMemoryRegionPage(
   return Object.freeze({
     items: Object.freeze(items),
     page,
+  });
+}
+
+export function filterMemoryRegionsByCriteria(
+  regions: readonly Region[],
+  criteria: RegionFilter,
+): readonly Region[] {
+  const ids = criteria.ids === undefined ? undefined : new Set(criteria.ids);
+
+  const codes =
+    criteria.codes === undefined ? undefined : new Set(criteria.codes);
+
+  const levels =
+    criteria.levels === undefined ? undefined : new Set(criteria.levels);
+
+  const types =
+    criteria.types === undefined ? undefined : new Set(criteria.types);
+
+  return regions.filter((region) => {
+    if (ids !== undefined && !ids.has(region.id)) {
+      return false;
+    }
+
+    if (codes !== undefined && !codes.has(region.code)) {
+      return false;
+    }
+
+    if (
+      criteria.parentId !== undefined &&
+      region.parentId !== criteria.parentId
+    ) {
+      return false;
+    }
+
+    if (levels !== undefined && !levels.has(region.level)) {
+      return false;
+    }
+
+    if (types !== undefined && !types.has(region.type)) {
+      return false;
+    }
+
+    return true;
   });
 }

@@ -33,6 +33,23 @@ describe("createRegionSortRules", () => {
     expect(Object.isFrozen(rules)).toBe(true);
     expect(rules.every((rule) => Object.isFrozen(rule))).toBe(true);
   });
+
+  it("adds secondary fields before the id tie-breaker", () => {
+    expect(createRegionSortRules("level", "asc", ["code"])).toEqual([
+      {
+        field: "level",
+        direction: "asc",
+      },
+      {
+        field: "code",
+        direction: "asc",
+      },
+      {
+        field: "id",
+        direction: "asc",
+      },
+    ]);
+  });
 });
 
 describe("sortRegions", () => {

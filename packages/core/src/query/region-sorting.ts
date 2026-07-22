@@ -10,15 +10,22 @@ export interface RegionSortRule {
 export function createRegionSortRules(
   sortBy: RegionSortField,
   direction: SortDirection,
+  secondaryFields: readonly RegionSortField[] = [],
 ): readonly RegionSortRule[] {
   return Object.freeze([
     Object.freeze({
       field: sortBy,
       direction,
     }),
+    ...secondaryFields.map((field) =>
+      Object.freeze({
+        field,
+        direction: "asc" as const,
+      }),
+    ),
     Object.freeze({
       field: "id",
-      direction: "asc",
+      direction: "asc" as const,
     }),
   ]);
 }

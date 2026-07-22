@@ -4,8 +4,11 @@ import { QueryValidationError } from "../errors/index.js";
 
 import { DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT } from "./constants.js";
 import {
+  resolveChildrenQuery,
+  resolveDescendantQuery,
   resolveFindByCodeQuery,
   resolveFindByNameQuery,
+  resolveFilterQuery,
   resolvePaginationOptions,
   resolveSortOptions,
   validateRegionId,
@@ -161,5 +164,98 @@ describe("resolveSortOptions", () => {
       sortBy: "level",
       direction: "desc",
     });
+  });
+});
+
+describe("resolveFilterQuery", () => {
+  it("resolves filter defaults", () => {
+    expect(resolveFilterQuery({}, undefined)).toMatchObject({
+      criteria: {},
+      options: {},
+      pagination: {
+        limit: DEFAULT_PAGE_LIMIT,
+        offset: 0,
+      },
+      sort: {
+        sortBy: "level",
+        direction: "asc",
+      },
+    });
+  });
+
+  it("accepts empty arrays and a null parent id", () => {
+    expect(
+      resolveFilterQuery(
+        {
+          ids: [],
+          codes: [],
+          parentId: null,
+          levels: [],
+          types: [],
+        },
+        undefined,
+      ).criteria,
+    ).toEqual({
+      ids: [],
+      codes: [],
+      parentId: null,
+      levels: [],
+      types: [],
+    });
+  });
+
+  it.each([
+    null,
+    [],
+    "invalid",
+    { ids: "ID" },
+    { ids: [""] },
+    { codes: ["   "] },
+    { parentId: "" },
+    { levels: "2" },
+    { levels: [-1] },
+    { levels: [1.5] },
+    { levels: [undefined] },
+    { types: [""] },
+  ])("rejects invalid criteria %#", (criteria) => {
+    expect(() => resolveFilterQuery(criteria, undefined)).toThrow(
+      QueryValidationError,
+    );
+  });
+});
+
+describe("traversal query validation", () => {
+  it("resolves children defaults", () => {
+    expect(resolveChildrenQuery("ID-JB", undefined)).toMatchObject({
+      pagination: {
+        limit: DEFAULT_PAGE_LIMIT,
+        offset: 0,
+      },
+      sort: {
+        sortBy: "code",
+        direction: "asc",
+      },
+    });
+  });
+
+  it("resolves descendant defaults", () => {
+    expect(resolveDescendantQuery("ID-JB", undefined)).toMatchObject({
+      pagination: {
+        limit: DEFAULT_PAGE_LIMIT,
+        offset: 0,
+      },
+      sort: {
+        sortBy: "level",
+        direction: "asc",
+      },
+    });
+  });
+
+  it.each([-1, 1.5, Number.NaN])("rejects invalid max depth %j", (maxDepth) => {
+    expect(() =>
+      resolveDescendantQuery("ID-JB", {
+        maxDepth,
+      }),
+    ).toThrow(QueryValidationError);
   });
 });

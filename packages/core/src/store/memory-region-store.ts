@@ -1,12 +1,19 @@
 import type { DatasetMetadata, Region } from "../dataset/index.js";
+import { RegionNotFoundError } from "../errors/index.js";
 import type {
+  DescendantOptions,
   FindByCodeOptions,
   FindByNameOptions,
+  QueryOptions,
+  RegionFilter,
   RegionPage,
 } from "../query/index.js";
 import {
+  resolveChildrenQuery,
+  resolveDescendantQuery,
   resolveFindByCodeQuery,
   resolveFindByNameQuery,
+  resolveFilterQuery,
   validateRegionId,
 } from "../query/query-validation.js";
 import { createRegionSortRules, sortRegions } from "../query/region-sorting.js";
@@ -14,8 +21,13 @@ import { buildMemoryIndexes, type MemoryIndexes } from "./memory-indexes.js";
 import {
   createMemoryRegionPage,
   filterMemoryRegions,
+  filterMemoryRegionsByCriteria,
   findMemoryNameCandidates,
 } from "./memory-query.js";
+import {
+  findMemoryAncestors,
+  findMemoryDescendants,
+} from "./memory-traversal.js";
 import {
   prepareMemoryDataset,
   type PreparedMemoryDataset,
@@ -43,23 +55,29 @@ export class MemoryRegionStore implements RegionStore {
     return new MemoryRegionStore(prepareMemoryDataset(input));
   }
 
+  #requireInternalRegion(id: string): Region {
+    const region = this.#indexes.byId.get(id);
+
+    if (region === undefined) {
+      throw new RegionNotFoundError(id);
+    }
+
+    return region;
+  }
+
   getMetadata(): Promise<DatasetMetadata> {
     return Promise.resolve(this.#metadata);
   }
 
-  getById(id: string): Promise<Region | null> {
+  async getById(id: string): Promise<Region | null> {
     validateRegionId(id);
 
     const region = this.#indexes.byId.get(id);
 
-    if (region === undefined) {
-      return Promise.resolve(null);
-    }
-
-    return Promise.resolve(structuredClone(region));
+    return region === undefined ? null : structuredClone(region);
   }
 
-  findByCode(
+  async findByCode(
     code: string,
     options: FindByCodeOptions = {},
   ): Promise<RegionPage> {
@@ -74,10 +92,10 @@ export class MemoryRegionStore implements RegionStore {
       createRegionSortRules(resolved.sort.sortBy, resolved.sort.direction),
     );
 
-    return Promise.resolve(createMemoryRegionPage(sorted, resolved.pagination));
+    return createMemoryRegionPage(sorted, resolved.pagination);
   }
 
-  findByName(
+  async findByName(
     name: string,
     options: FindByNameOptions = {},
   ): Promise<RegionPage> {
@@ -97,7 +115,114 @@ export class MemoryRegionStore implements RegionStore {
       createRegionSortRules(resolved.sort.sortBy, resolved.sort.direction),
     );
 
-    return Promise.resolve(createMemoryRegionPage(sorted, resolved.pagination));
+    return createMemoryRegionPage(sorted, resolved.pagination);
+  }
+
+  async filter(
+    criteria: RegionFilter,
+    options: QueryOptions = {},
+  ): Promise<RegionPage> {
+    const resolved = resolveFilterQuery(criteria, options);
+
+    const filtered = filterMemoryRegionsByCriteria(
+      this.#regions,
+      resolved.criteria,
+    );
+
+    const useDefaultSort =
+      resolved.options.sortBy === undefined &&
+      resolved.options.direction === undefined;
+
+    const sorted = sortRegions(
+      filtered,
+      createRegionSortRules(
+        resolved.sort.sortBy,
+        resolved.sort.direction,
+        useDefaultSort ? ["code"] : [],
+      ),
+    );
+
+    return createMemoryRegionPage(sorted, resolved.pagination);
+  }
+
+  async parentOf(id: string): Promise<Region | null> {
+    validateRegionId(id);
+
+    const region = this.#requireInternalRegion(id);
+
+    if (region.parentId === null) {
+      return null;
+    }
+
+    const parent = this.#indexes.byId.get(region.parentId);
+
+    if (parent === undefined) {
+      throw new Error(
+        `Memory store invariant violated: parent "${region.parentId}" was not found.`,
+      );
+    }
+
+    return structuredClone(parent);
+  }
+
+  async childrenOf(
+    id: string,
+    options: QueryOptions = {},
+  ): Promise<RegionPage> {
+    const resolved = resolveChildrenQuery(id, options);
+
+    this.#requireInternalRegion(id);
+
+    const children = this.#indexes.byParentId.get(id) ?? [];
+
+    const sorted = sortRegions(
+      children,
+      createRegionSortRules(resolved.sort.sortBy, resolved.sort.direction),
+    );
+
+    return createMemoryRegionPage(sorted, resolved.pagination);
+  }
+
+  async ancestorsOf(id: string): Promise<readonly Region[]> {
+    validateRegionId(id);
+
+    const region = this.#requireInternalRegion(id);
+
+    const ancestors = structuredClone(
+      findMemoryAncestors(region, this.#indexes),
+    );
+
+    return Object.freeze(ancestors);
+  }
+
+  async descendantsOf(
+    id: string,
+    options: DescendantOptions = {},
+  ): Promise<RegionPage> {
+    const resolved = resolveDescendantQuery(id, options);
+
+    this.#requireInternalRegion(id);
+
+    const descendants = findMemoryDescendants(
+      id,
+      this.#indexes,
+      resolved.options.maxDepth,
+    );
+
+    const useDefaultSort =
+      resolved.options.sortBy === undefined &&
+      resolved.options.direction === undefined;
+
+    const sorted = sortRegions(
+      descendants,
+      createRegionSortRules(
+        resolved.sort.sortBy,
+        resolved.sort.direction,
+        useDefaultSort ? ["code"] : [],
+      ),
+    );
+
+    return createMemoryRegionPage(sorted, resolved.pagination);
   }
 
   close(): Promise<void> {
