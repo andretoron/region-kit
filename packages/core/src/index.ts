@@ -11,7 +11,12 @@ export { validateRegionDataset } from "./dataset/index.js";
 export { RegionKitError } from "./errors/index.js";
 export type { RegionKitErrorCode } from "./errors/index.js";
 
-export { DatasetValidationError } from "./errors/index.js";
+export {
+  DatasetValidationError,
+  QueryValidationError,
+  RegionKitClosedError,
+  RegionNotFoundError,
+} from "./errors/index.js";
 
 export type {
   DatasetValidationIssue,
@@ -21,11 +26,21 @@ export type {
 } from "./errors/index.js";
 
 export type {
+  DescendantOptions,
   FindByCodeOptions,
   FindByNameOptions,
   PageInfo,
   PaginationOptions,
+  QueryOptions,
+  RegionFilter,
   RegionPage,
+  RegionSearchMatchedField,
+  RegionSearchPage,
+  RegionSearchResult,
+  RegionSortField,
+  SearchOptions,
+  SortDirection,
+  SortOptions,
   TextMatch,
 } from "./query/index.js";
 
