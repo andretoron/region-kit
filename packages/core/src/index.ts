@@ -46,3 +46,5 @@ export type {
 
 export type { RegionStore } from "./store/index.js";
 export { MemoryRegionStore } from "./store/index.js";
+
+export { RegionKit } from "./region-kit.js";
