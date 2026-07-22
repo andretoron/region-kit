@@ -1,4 +1,5 @@
 import type { Region } from "../dataset/index.js";
+import { normalizeRegionText } from "../query/text-matching.js";
 
 export interface MemoryIndexes {
   readonly byId: ReadonlyMap<string, Region>;
@@ -15,10 +16,6 @@ export interface MemoryIndexes {
 }
 
 type MutableMultiIndex<Key> = Map<Key, Region[]>;
-
-export function normalizeRegionText(value: string): string {
-  return value.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
-}
 
 function addToMultiIndex<Key>(
   index: MutableMultiIndex<Key>,

@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import type { Region } from "../dataset/index.js";
 
-import { createRegionSortRules, sortRegions } from "./region-sorting.js";
+import {
+  createRegionSortRules,
+  sortRegions,
+  sortRegionSearchResults,
+} from "./region-sorting.js";
 
 function createRegion(overrides: Partial<Region> = {}): Region {
   return {
@@ -132,5 +136,63 @@ describe("sortRegions", () => {
     expect(reversed.map((region) => region.id)).toEqual(
       forward.map((region) => region.id),
     );
+  });
+});
+
+describe("sortRegionSearchResults", () => {
+  it("sorts by region fields instead of matched value", () => {
+    const results = [
+      {
+        region: createRegion({
+          id: "region-b",
+          name: "Beta",
+        }),
+        matchedField: "name" as const,
+        matchedValue: "Beta",
+      },
+      {
+        region: createRegion({
+          id: "region-a",
+          name: "Alpha",
+        }),
+        matchedField: "alias" as const,
+        matchedValue: "Unrelated Alias",
+      },
+    ];
+
+    const sorted = sortRegionSearchResults(
+      results,
+      createRegionSortRules("name", "asc"),
+    );
+
+    expect(sorted.map((result) => result.region.id)).toEqual([
+      "region-a",
+      "region-b",
+    ]);
+  });
+
+  it("uses id ascending when the primary region field is equal", () => {
+    const results = [
+      {
+        region: createRegion({ id: "region-b", name: "Bandung" }),
+        matchedField: "name" as const,
+        matchedValue: "Bandung",
+      },
+      {
+        region: createRegion({ id: "region-a", name: "Bandung" }),
+        matchedField: "alias" as const,
+        matchedValue: "Bandung City",
+      },
+    ];
+
+    const sorted = sortRegionSearchResults(
+      results,
+      createRegionSortRules("name", "asc"),
+    );
+
+    expect(sorted.map((result) => result.region.id)).toEqual([
+      "region-a",
+      "region-b",
+    ]);
   });
 });

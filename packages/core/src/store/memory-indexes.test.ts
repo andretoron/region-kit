@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { regionStoreContractDataset } from "../../test/contract/region-store-contract-dataset.js";
-import { buildMemoryIndexes, normalizeRegionText } from "./memory-indexes.js";
+import { buildMemoryIndexes } from "./memory-indexes.js";
 import { prepareMemoryDataset } from "./prepare-memory-dataset.js";
+import { normalizeRegionText } from "../query/text-matching.js";
 
 function createIndexes() {
   const prepared = prepareMemoryDataset(

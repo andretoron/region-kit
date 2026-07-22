@@ -6,9 +6,13 @@ import type {
   RegionPage,
   TextMatch,
 } from "../query/index.js";
-import { normalizeRegionText, type MemoryIndexes } from "./memory-indexes.js";
+import type { MemoryIndexes } from "./memory-indexes.js";
 
 import { resolvePaginationOptions } from "../query/query-validation.js";
+import {
+  matchesRegionText,
+  normalizeRegionText,
+} from "../query/text-matching.js";
 
 export interface MemoryRegionFilter {
   readonly parentId?: string;
@@ -37,24 +41,13 @@ export function filterMemoryRegions(
   });
 }
 
-function matchesText(value: string, query: string, match: TextMatch): boolean {
-  switch (match) {
-    case "exact":
-      return value === query;
-    case "prefix":
-      return value.startsWith(query);
-    case "contains":
-      return value.includes(query);
-  }
-}
-
 function regionMatchesName(
   region: Region,
   normalizedQuery: string,
   match: TextMatch,
   includeAliases: boolean,
 ): boolean {
-  if (matchesText(normalizeRegionText(region.name), normalizedQuery, match)) {
+  if (matchesRegionText(region.name, normalizedQuery, match)) {
     return true;
   }
 
@@ -63,7 +56,7 @@ function regionMatchesName(
   }
 
   return (region.aliases ?? []).some((alias) =>
-    matchesText(normalizeRegionText(alias), normalizedQuery, match),
+    matchesRegionText(alias, normalizedQuery, match),
   );
 }
 

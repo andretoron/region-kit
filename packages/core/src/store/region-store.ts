@@ -7,6 +7,8 @@ import type {
   QueryOptions,
   RegionFilter,
   RegionPage,
+  RegionSearchPage,
+  SearchOptions,
 } from "../query/index.js";
 
 export interface RegionStore {
@@ -17,6 +19,8 @@ export interface RegionStore {
   findByCode(code: string, options?: FindByCodeOptions): Promise<RegionPage>;
 
   findByName(name: string, options?: FindByNameOptions): Promise<RegionPage>;
+
+  search(query: string, options?: SearchOptions): Promise<RegionSearchPage>;
 
   filter(criteria: RegionFilter, options?: QueryOptions): Promise<RegionPage>;
 

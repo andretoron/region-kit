@@ -320,6 +320,220 @@ export function defineRegionStoreContract(
       expect(result.page.hasMore).toBe(false);
     });
 
+    it("searches primary names using contains matching by default", async () => {
+      const result = await currentStore().search("bandung");
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+      ]);
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-REG-BDG",
+          }),
+          matchedField: "name",
+          matchedValue: "Kabupaten Bandung",
+        }),
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-CITY-BDG",
+          }),
+          matchedField: "name",
+          matchedValue: "Kota Bandung",
+        }),
+      ]);
+    });
+
+    it("reports exact alias matches", async () => {
+      const result = await currentStore().search("Bandung", {
+        match: "exact",
+      });
+
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-REG-BDG",
+          }),
+          matchedField: "alias",
+          matchedValue: "Bandung",
+        }),
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-CITY-BDG",
+          }),
+          matchedField: "alias",
+          matchedValue: "Bandung",
+        }),
+      ]);
+    });
+
+    it("searches aliases", async () => {
+      const result = await currentStore().search("west");
+
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB",
+          }),
+          matchedField: "alias",
+          matchedValue: "West Java",
+        }),
+      ]);
+    });
+
+    it("filters search by parent id", async () => {
+      const result = await currentStore().search("a", {
+        parentId: "ID-JB",
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("filters search by levels", async () => {
+      const result = await currentStore().search("a", {
+        levels: [1],
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual(["ID-JB"]);
+    });
+
+    it("filters search by types", async () => {
+      const result = await currentStore().search("i", {
+        types: ["district"],
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG-DISTRICT",
+        "ID-JB-REG-BDG-DISTRICT",
+      ]);
+    });
+
+    it("combines search filters using AND", async () => {
+      const result = await currentStore().search("bandung", {
+        parentId: "ID-JB",
+        levels: [2],
+        types: ["city"],
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("supports prefix search matching", async () => {
+      const result = await currentStore().search("kota", {
+        match: "prefix",
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("supports custom search sorting", async () => {
+      const result = await currentStore().search("bandung", {
+        sortBy: "code",
+        direction: "desc",
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+        "ID-JB-REG-BDG",
+      ]);
+    });
+
+    it("applies search pagination after sorting", async () => {
+      const firstPage = await currentStore().search("bandung", {
+        limit: 1,
+        offset: 0,
+      });
+      const secondPage = await currentStore().search("bandung", {
+        limit: 1,
+        offset: 1,
+      });
+
+      expect(firstPage.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-REG-BDG",
+      ]);
+      expect(secondPage.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+      expectPageInfo(firstPage.page, {
+        limit: 1,
+        offset: 0,
+        hasMore: true,
+        total: 2,
+      });
+      expectPageInfo(secondPage.page, {
+        limit: 1,
+        offset: 1,
+        hasMore: false,
+        total: 2,
+      });
+    });
+
+    it("returns an empty search page", async () => {
+      const result = await currentStore().search("sulawesi");
+
+      expect(result.items).toEqual([]);
+      expect(result.page.hasMore).toBe(false);
+    });
+
+    it("rejects invalid search input asynchronously", async () => {
+      const result = currentStore().search("");
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("rejects invalid search options", async () => {
+      await expect(
+        currentStore().search("bandung", {
+          match: "fuzzy" as never,
+        }),
+      ).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("does not expose mutable internal search state", async () => {
+      const first = await currentStore().search("bandung");
+      const firstItem = first.items[0];
+
+      expect(firstItem).toBeDefined();
+
+      if (firstItem === undefined) {
+        return;
+      }
+
+      attemptMutation(() =>
+        Reflect.set(firstItem.region, "name", "Mutated Name"),
+      );
+      attemptMutation(() => Reflect.set(firstItem, "matchedValue", "Mutated"));
+
+      const aliases = firstItem.region.aliases;
+
+      if (aliases !== undefined) {
+        attemptMutation(() => Reflect.set(aliases, "0", "Mutated Alias"));
+      }
+
+      const second = await currentStore().search("bandung");
+
+      expect(second.items[0]).toEqual(
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-REG-BDG",
+            name: "Kabupaten Bandung",
+            aliases: ["Bandung"],
+          }),
+          matchedField: "name",
+          matchedValue: "Kabupaten Bandung",
+        }),
+      );
+    });
+
     it("filters all regions with empty criteria in default order", async () => {
       const result = await currentStore().filter({});
 

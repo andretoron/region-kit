@@ -7,6 +7,8 @@ import type {
   QueryOptions,
   RegionFilter,
   RegionPage,
+  RegionSearchPage,
+  SearchOptions,
 } from "../query/index.js";
 import {
   resolveChildrenQuery,
@@ -15,8 +17,13 @@ import {
   resolveFindByNameQuery,
   resolveFilterQuery,
   validateRegionId,
+  resolveSearchQuery,
 } from "../query/query-validation.js";
-import { createRegionSortRules, sortRegions } from "../query/region-sorting.js";
+import {
+  createRegionSortRules,
+  sortRegions,
+  sortRegionSearchResults,
+} from "../query/region-sorting.js";
 import { buildMemoryIndexes, type MemoryIndexes } from "./memory-indexes.js";
 import {
   createMemoryRegionPage,
@@ -24,6 +31,10 @@ import {
   filterMemoryRegionsByCriteria,
   findMemoryNameCandidates,
 } from "./memory-query.js";
+import {
+  createMemoryRegionSearchPage,
+  findMemorySearchResults,
+} from "./memory-search.js";
 import {
   findMemoryAncestors,
   findMemoryDescendants,
@@ -116,6 +127,27 @@ export class MemoryRegionStore implements RegionStore {
     );
 
     return createMemoryRegionPage(sorted, resolved.pagination);
+  }
+
+  async search(
+    query: string,
+    options: SearchOptions = {},
+  ): Promise<RegionSearchPage> {
+    const resolved = resolveSearchQuery(query, options);
+
+    const results = findMemorySearchResults(
+      this.#regions,
+      query,
+      resolved.match,
+      resolved.options,
+    );
+
+    const sorted = sortRegionSearchResults(
+      results,
+      createRegionSortRules(resolved.sort.sortBy, resolved.sort.direction),
+    );
+
+    return createMemoryRegionSearchPage(sorted, resolved.pagination);
   }
 
   async filter(

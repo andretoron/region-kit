@@ -9,6 +9,7 @@ import type {
   QueryOptions,
   RegionFilter,
   RegionSortField,
+  SearchOptions,
   SortDirection,
   SortOptions,
   TextMatch,
@@ -25,6 +26,12 @@ const SORT_DIRECTIONS = new Set<SortDirection>(["asc", "desc"]);
 
 const TEXT_MATCHES = new Set<TextMatch>(["exact", "prefix", "contains"]);
 
+export interface ResolvedSearchQuery {
+  readonly options: SearchOptions;
+  readonly match: TextMatch;
+  readonly pagination: ResolvedPaginationOptions;
+  readonly sort: ResolvedSortOptions;
+}
 export interface ResolvedFilterQuery {
   readonly criteria: RegionFilter;
   readonly options: QueryOptions;
@@ -334,5 +341,40 @@ export function resolveDescendantQuery(
     options: descendantOptions,
     pagination: resolvePaginationOptions(descendantOptions),
     sort: resolveSortOptions(descendantOptions, "level"),
+  });
+}
+
+export function resolveSearchQuery(
+  query: unknown,
+  options: unknown,
+): ResolvedSearchQuery {
+  validateRequiredString(query, "query");
+
+  const searchOptions = validateOptionsObject<SearchOptions>(
+    options,
+    "options",
+  );
+
+  if (
+    searchOptions.match !== undefined &&
+    !TEXT_MATCHES.has(searchOptions.match)
+  ) {
+    throw new QueryValidationError(
+      "match",
+      'Expected "exact", "prefix", or "contains".',
+    );
+  }
+
+  validateOptionalString(searchOptions.parentId, "parentId");
+
+  validateOptionalNonNegativeIntegerArray(searchOptions.levels, "levels");
+
+  validateOptionalStringArray(searchOptions.types, "types");
+
+  return Object.freeze({
+    options: searchOptions,
+    match: searchOptions.match ?? "contains",
+    pagination: resolvePaginationOptions(searchOptions),
+    sort: resolveSortOptions(searchOptions, "name"),
   });
 }

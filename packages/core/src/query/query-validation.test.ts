@@ -10,6 +10,7 @@ import {
   resolveFindByNameQuery,
   resolveFilterQuery,
   resolvePaginationOptions,
+  resolveSearchQuery,
   resolveSortOptions,
   validateRegionId,
 } from "./query-validation.js";
@@ -257,5 +258,68 @@ describe("traversal query validation", () => {
         maxDepth,
       }),
     ).toThrow(QueryValidationError);
+  });
+});
+
+describe("resolveSearchQuery", () => {
+  it("resolves search defaults", () => {
+    expect(resolveSearchQuery("bandung", undefined)).toMatchObject({
+      match: "contains",
+      pagination: {
+        limit: DEFAULT_PAGE_LIMIT,
+        offset: 0,
+      },
+      sort: {
+        sortBy: "name",
+        direction: "asc",
+      },
+    });
+  });
+
+  it("resolves valid custom search options", () => {
+    expect(
+      resolveSearchQuery("bandung", {
+        match: "prefix",
+        parentId: "ID-JB",
+        levels: [2],
+        types: ["city"],
+        limit: 10,
+        offset: 5,
+        sortBy: "code",
+        direction: "desc",
+      }),
+    ).toMatchObject({
+      match: "prefix",
+      pagination: {
+        limit: 10,
+        offset: 5,
+      },
+      sort: {
+        sortBy: "code",
+        direction: "desc",
+      },
+    });
+  });
+
+  it.each(["", "   "])("rejects invalid search query %j", (query) => {
+    expect(() => resolveSearchQuery(query, undefined)).toThrow(
+      QueryValidationError,
+    );
+  });
+
+  it.each([
+    null,
+    { match: "fuzzy" },
+    { parentId: "" },
+    { levels: 2 },
+    { levels: [-1] },
+    { types: "city" },
+    { types: [""] },
+    { limit: 0 },
+    { sortBy: "id" },
+  ])("rejects invalid search options %#", (options) => {
+    expect(() => resolveSearchQuery("bandung", options)).toThrow(
+      QueryValidationError,
+    );
   });
 });
