@@ -1,12 +1,21 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { DatasetValidationError } from "../errors/index.js";
+import {
+  DatasetValidationError,
+  QueryValidationError,
+} from "../errors/index.js";
 
 import { regionStoreContractDataset } from "../../test/contract/region-store-contract-dataset.js";
 
 import { defineRegionStoreContract } from "../../test/contract/region-store.contract.js";
 
 import { MemoryRegionStore } from "./memory-region-store.js";
+
+function createStore(): MemoryRegionStore {
+  return MemoryRegionStore.fromData(
+    structuredClone(regionStoreContractDataset),
+  );
+}
 
 defineRegionStoreContract({
   createStore: async () => {
@@ -49,5 +58,115 @@ describe("MemoryRegionStore", () => {
     );
 
     await store.close();
+  });
+
+  it("rejects an empty region id", () => {
+    const store = createStore();
+
+    expect(() => store.getById("")).toThrow(QueryValidationError);
+  });
+
+  it("rejects an empty code", () => {
+    const store = createStore();
+
+    expect(() => store.findByCode("")).toThrow(QueryValidationError);
+  });
+
+  it("rejects a blank name", () => {
+    const store = createStore();
+
+    expect(() => store.findByName("   ")).toThrow(QueryValidationError);
+  });
+
+  it.each([{ limit: 0 }, { limit: 1001 }, { offset: -1 }])(
+    "rejects invalid pagination %#",
+    (options) => {
+      const store = createStore();
+
+      expect(() => store.findByCode("01", options)).toThrow(
+        QueryValidationError,
+      );
+    },
+  );
+
+  it("rejects an invalid text match", () => {
+    const store = createStore();
+
+    expect(() =>
+      store.findByName("Bandung", {
+        match: "fuzzy" as never,
+      }),
+    ).toThrow(QueryValidationError);
+  });
+
+  it("rejects an invalid sort field", () => {
+    const store = createStore();
+
+    expect(() =>
+      store.findByCode("01", {
+        sortBy: "id" as never,
+      }),
+    ).toThrow(QueryValidationError);
+  });
+
+  it("sorts code lookup by code and then id by default", async () => {
+    const store = createStore();
+
+    const result = await store.findByCode("01");
+
+    expect(result.items.map((region) => region.id)).toEqual([
+      "ID-JB-CITY-BDG-DISTRICT",
+      "ID-JB-REG-BDG-DISTRICT",
+    ]);
+  });
+
+  it("sorts name lookup by name and then id by default", async () => {
+    const store = createStore();
+
+    const result = await store.findByName("Bandung");
+
+    expect(result.items.map((region) => region.id)).toEqual([
+      "ID-JB-REG-BDG",
+      "ID-JB-CITY-BDG",
+    ]);
+  });
+
+  it("supports descending sorting", async () => {
+    const store = createStore();
+
+    const result = await store.findByName("Bandung", {
+      direction: "desc",
+    });
+
+    expect(result.items.map((region) => region.id)).toEqual([
+      "ID-JB-CITY-BDG",
+      "ID-JB-REG-BDG",
+    ]);
+  });
+
+  it("sorts before applying pagination", async () => {
+    const store = createStore();
+
+    const firstPage = await store.findByName("bandung", {
+      match: "contains",
+      sortBy: "name",
+      direction: "asc",
+      limit: 1,
+      offset: 0,
+    });
+    const secondPage = await store.findByName("bandung", {
+      match: "contains",
+      sortBy: "name",
+      direction: "asc",
+      limit: 1,
+      offset: 1,
+    });
+
+    expect(firstPage.items.map((region) => region.id)).toEqual([
+      "ID-JB-REG-BDG",
+    ]);
+    expect(secondPage.items.map((region) => region.id)).toEqual([
+      "ID-JB-CITY-BDG",
+    ]);
   });
 });

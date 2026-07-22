@@ -6,12 +6,14 @@ import { buildMemoryIndexes } from "./memory-indexes.js";
 
 import {
   createMemoryRegionPage,
-  DEFAULT_MEMORY_PAGE_LIMIT,
   filterMemoryRegions,
   findMemoryNameCandidates,
 } from "./memory-query.js";
 
+import { DEFAULT_PAGE_LIMIT } from "../query/constants.js";
+
 import { prepareMemoryDataset } from "./prepare-memory-dataset.js";
+import { QueryValidationError } from "../errors/index.js";
 
 function createQueryFixture() {
   const prepared = prepareMemoryDataset(
@@ -137,7 +139,7 @@ describe("createMemoryRegionPage", () => {
     expect(result.items).toHaveLength(prepared.regions.length);
 
     expect(result.page).toEqual({
-      limit: DEFAULT_MEMORY_PAGE_LIMIT,
+      limit: DEFAULT_PAGE_LIMIT,
       offset: 0,
       hasMore: false,
       total: prepared.regions.length,
@@ -246,5 +248,19 @@ describe("createMemoryRegionPage", () => {
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.items)).toBe(true);
     expect(Object.isFrozen(result.page)).toBe(true);
+  });
+
+  it.each([
+    { limit: 0 },
+    { limit: 1001 },
+    { limit: 1.5 },
+    { offset: -1 },
+    { offset: 1.5 },
+  ])("rejects invalid pagination %#", (options) => {
+    const { prepared } = createQueryFixture();
+
+    expect(() => createMemoryRegionPage(prepared.regions, options)).toThrow(
+      QueryValidationError,
+    );
   });
 });

@@ -4,6 +4,12 @@ import type {
   FindByNameOptions,
   RegionPage,
 } from "../query/index.js";
+import {
+  resolveFindByCodeQuery,
+  resolveFindByNameQuery,
+  validateRegionId,
+} from "../query/query-validation.js";
+import { createRegionSortRules, sortRegions } from "../query/region-sorting.js";
 import { buildMemoryIndexes, type MemoryIndexes } from "./memory-indexes.js";
 import {
   createMemoryRegionPage,
@@ -42,6 +48,8 @@ export class MemoryRegionStore implements RegionStore {
   }
 
   getById(id: string): Promise<Region | null> {
+    validateRegionId(id);
+
     const region = this.#indexes.byId.get(id);
 
     if (region === undefined) {
@@ -55,27 +63,41 @@ export class MemoryRegionStore implements RegionStore {
     code: string,
     options: FindByCodeOptions = {},
   ): Promise<RegionPage> {
+    const resolved = resolveFindByCodeQuery(code, options);
+
     const candidates = this.#indexes.byCode.get(code) ?? [];
 
-    const filtered = filterMemoryRegions(candidates, options);
+    const filtered = filterMemoryRegions(candidates, resolved.options);
 
-    return Promise.resolve(createMemoryRegionPage(filtered, options));
+    const sorted = sortRegions(
+      filtered,
+      createRegionSortRules(resolved.sort.sortBy, resolved.sort.direction),
+    );
+
+    return Promise.resolve(createMemoryRegionPage(sorted, resolved.pagination));
   }
 
   findByName(
     name: string,
     options: FindByNameOptions = {},
   ): Promise<RegionPage> {
+    const resolved = resolveFindByNameQuery(name, options);
+
     const candidates = findMemoryNameCandidates(
       this.#regions,
       this.#indexes,
       name,
-      options,
+      resolved.options,
     );
 
-    const filtered = filterMemoryRegions(candidates, options);
+    const filtered = filterMemoryRegions(candidates, resolved.options);
 
-    return Promise.resolve(createMemoryRegionPage(filtered, options));
+    const sorted = sortRegions(
+      filtered,
+      createRegionSortRules(resolved.sort.sortBy, resolved.sort.direction),
+    );
+
+    return Promise.resolve(createMemoryRegionPage(sorted, resolved.pagination));
   }
 
   close(): Promise<void> {

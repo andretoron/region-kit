@@ -7,7 +7,7 @@ import type {
 } from "../query/index.js";
 import { normalizeRegionText, type MemoryIndexes } from "./memory-indexes.js";
 
-export const DEFAULT_MEMORY_PAGE_LIMIT = 50;
+import { resolvePaginationOptions } from "../query/query-validation.js";
 
 export interface MemoryRegionFilter {
   readonly parentId?: string;
@@ -97,8 +97,7 @@ export function createMemoryRegionPage(
   regions: readonly Region[],
   options: PaginationOptions = {},
 ): RegionPage {
-  const limit = options.limit ?? DEFAULT_MEMORY_PAGE_LIMIT;
-  const offset = options.offset ?? 0;
+  const { limit, offset } = resolvePaginationOptions(options);
   const total = regions.length;
 
   const items = structuredClone(regions.slice(offset, offset + limit));
