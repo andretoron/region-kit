@@ -223,6 +223,17 @@ describe("resolveFilterQuery", () => {
       QueryValidationError,
     );
   });
+
+  it("rejects malformed filter arrays", () => {
+    expect(() =>
+      resolveFilterQuery(
+        {
+          ids: [undefined] as never,
+        },
+        undefined,
+      ),
+    ).toThrow(QueryValidationError);
+  });
 });
 
 describe("traversal query validation", () => {
@@ -299,6 +310,34 @@ describe("resolveSearchQuery", () => {
         direction: "desc",
       },
     });
+  });
+
+  it("rejects undefined values inside numeric arrays", () => {
+    expect(() =>
+      resolveSearchQuery("bandung", {
+        levels: [undefined] as never,
+      }),
+    ).toThrow(QueryValidationError);
+  });
+
+  it("rejects sparse numeric arrays", () => {
+    const levels = new Array<number>(1);
+
+    expect(() =>
+      resolveSearchQuery("bandung", {
+        levels,
+      }),
+    ).toThrow(QueryValidationError);
+  });
+
+  it("rejects sparse string arrays", () => {
+    const types = new Array<string>(1);
+
+    expect(() =>
+      resolveSearchQuery("bandung", {
+        types,
+      }),
+    ).toThrow(QueryValidationError);
   });
 
   it.each(["", "   "])("rejects invalid search query %j", (query) => {

@@ -104,6 +104,18 @@ function validateOptionalString(value: unknown, parameter: string): void {
   validateRequiredString(value, parameter);
 }
 
+function validateRequiredNonNegativeInteger(
+  value: unknown,
+  parameter: string,
+): asserts value is number {
+  if (!Number.isInteger(value) || (value as number) < 0) {
+    throw new QueryValidationError(
+      parameter,
+      "Expected a non-negative integer.",
+    );
+  }
+}
+
 function validateOptionalNonNegativeInteger(
   value: unknown,
   parameter: string,
@@ -112,16 +124,7 @@ function validateOptionalNonNegativeInteger(
     return;
   }
 
-  validateNonNegativeInteger(value, parameter);
-}
-
-function validateNonNegativeInteger(value: unknown, parameter: string): void {
-  if (!Number.isInteger(value) || (value as number) < 0) {
-    throw new QueryValidationError(
-      parameter,
-      "Expected a non-negative integer.",
-    );
-  }
+  validateRequiredNonNegativeInteger(value, parameter);
 }
 
 function validateOptionalStringArray(value: unknown, parameter: string): void {
@@ -136,9 +139,9 @@ function validateOptionalStringArray(value: unknown, parameter: string): void {
     );
   }
 
-  value.forEach((item, index) => {
-    validateRequiredString(item, `${parameter}[${index}]`);
-  });
+  for (let index = 0; index < value.length; index += 1) {
+    validateRequiredString(value[index], `${parameter}[${index}]`);
+  }
 }
 
 function validateOptionalNonNegativeIntegerArray(
@@ -156,9 +159,9 @@ function validateOptionalNonNegativeIntegerArray(
     );
   }
 
-  value.forEach((item, index) => {
-    validateNonNegativeInteger(item, `${parameter}[${index}]`);
-  });
+  for (let index = 0; index < value.length; index += 1) {
+    validateRequiredNonNegativeInteger(value[index], `${parameter}[${index}]`);
+  }
 }
 
 function validateOptionalNullableString(
