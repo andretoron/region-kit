@@ -17,6 +17,10 @@ const temporaryDirectory = mkdtempSync(
   join(tmpdir(), "region-kit-distribution-"),
 );
 
+const typescriptCliPath = fileURLToPath(
+  import.meta.resolve("typescript/bin/tsc"),
+);
+
 const requiredFiles = [
   "LICENSE",
   "README.md",
@@ -53,6 +57,13 @@ const javascriptConsumerFixtureDirectory = join(
   "test",
   "consumer-smoke",
   "javascript-esm",
+);
+
+const typescriptConsumerFixtureDirectory = join(
+  repositoryRoot,
+  "test",
+  "consumer-smoke",
+  "typescript-esm",
 );
 
 function runPnpm(arguments_, options = {}) {
@@ -167,15 +178,8 @@ function auditSourceMaps() {
   }
 }
 
-function runJavaScriptConsumer(tarballPath) {
-  const consumerDirectory = join(temporaryDirectory, "javascript-esm");
+function installTarball(consumerDirectory, tarballPath) {
   const packageStoreDirectory = join(temporaryDirectory, "pnpm-store");
-
-  cpSync(javascriptConsumerFixtureDirectory, consumerDirectory, {
-    recursive: true,
-  });
-
-  console.log("Installing tarball in the JavaScript ESM consumer...");
 
   runPnpm(
     [
@@ -193,6 +197,17 @@ function runJavaScriptConsumer(tarballPath) {
       stdio: "inherit",
     },
   );
+}
+
+function runJavaScriptConsumer(tarballPath) {
+  const consumerDirectory = join(temporaryDirectory, "javascript-esm");
+
+  cpSync(javascriptConsumerFixtureDirectory, consumerDirectory, {
+    recursive: true,
+  });
+
+  console.log("Installing tarball in the JavaScript ESM consumer...");
+  installTarball(consumerDirectory, tarballPath);
 
   console.log("Running the JavaScript ESM consumer smoke test...");
 
@@ -200,6 +215,35 @@ function runJavaScriptConsumer(tarballPath) {
     cwd: consumerDirectory,
     stdio: "inherit",
   });
+}
+
+function runTypeScriptConsumer(tarballPath) {
+  const consumerDirectory = join(temporaryDirectory, "typescript-esm");
+
+  cpSync(typescriptConsumerFixtureDirectory, consumerDirectory, {
+    recursive: true,
+  });
+
+  console.log("Installing tarball in the TypeScript ESM consumer...");
+  installTarball(consumerDirectory, tarballPath);
+
+  console.log("Type-checking the TypeScript ESM consumer...");
+
+  execFileSync(
+    process.execPath,
+    [
+      typescriptCliPath,
+      "--project",
+      join(consumerDirectory, "tsconfig.json"),
+      "--noEmit",
+    ],
+    {
+      cwd: consumerDirectory,
+      stdio: "inherit",
+    },
+  );
+
+  console.log("TypeScript ESM consumer smoke test passed.");
 }
 
 try {
@@ -236,6 +280,7 @@ try {
   const packagePaths = auditPackageFiles(packReport.files);
   auditSourceMaps();
   runJavaScriptConsumer(tarballPath);
+  runTypeScriptConsumer(tarballPath);
 
   console.log(
     `Distribution check passed for ${packReport.name}@${packReport.version} (${packagePaths.length} files).`,
