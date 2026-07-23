@@ -2,12 +2,17 @@ import type { Region } from "../dataset/index.js";
 import type {
   FindByNameOptions,
   PaginationOptions,
+  RegionFilter,
   RegionPage,
   TextMatch,
 } from "../query/index.js";
-import { normalizeRegionText, type MemoryIndexes } from "./memory-indexes.js";
+import type { MemoryIndexes } from "./memory-indexes.js";
 
-export const DEFAULT_MEMORY_PAGE_LIMIT = 50;
+import { resolvePaginationOptions } from "../query/query-validation.js";
+import {
+  matchesRegionText,
+  normalizeRegionText,
+} from "../query/text-matching.js";
 
 export interface MemoryRegionFilter {
   readonly parentId?: string;
@@ -36,24 +41,13 @@ export function filterMemoryRegions(
   });
 }
 
-function matchesText(value: string, query: string, match: TextMatch): boolean {
-  switch (match) {
-    case "exact":
-      return value === query;
-    case "prefix":
-      return value.startsWith(query);
-    case "contains":
-      return value.includes(query);
-  }
-}
-
 function regionMatchesName(
   region: Region,
   normalizedQuery: string,
   match: TextMatch,
   includeAliases: boolean,
 ): boolean {
-  if (matchesText(normalizeRegionText(region.name), normalizedQuery, match)) {
+  if (matchesRegionText(region.name, normalizedQuery, match)) {
     return true;
   }
 
@@ -62,7 +56,7 @@ function regionMatchesName(
   }
 
   return (region.aliases ?? []).some((alias) =>
-    matchesText(normalizeRegionText(alias), normalizedQuery, match),
+    matchesRegionText(alias, normalizedQuery, match),
   );
 }
 
@@ -97,8 +91,7 @@ export function createMemoryRegionPage(
   regions: readonly Region[],
   options: PaginationOptions = {},
 ): RegionPage {
-  const limit = options.limit ?? DEFAULT_MEMORY_PAGE_LIMIT;
-  const offset = options.offset ?? 0;
+  const { limit, offset } = resolvePaginationOptions(options);
   const total = regions.length;
 
   const items = structuredClone(regions.slice(offset, offset + limit));
@@ -113,5 +106,48 @@ export function createMemoryRegionPage(
   return Object.freeze({
     items: Object.freeze(items),
     page,
+  });
+}
+
+export function filterMemoryRegionsByCriteria(
+  regions: readonly Region[],
+  criteria: RegionFilter,
+): readonly Region[] {
+  const ids = criteria.ids === undefined ? undefined : new Set(criteria.ids);
+
+  const codes =
+    criteria.codes === undefined ? undefined : new Set(criteria.codes);
+
+  const levels =
+    criteria.levels === undefined ? undefined : new Set(criteria.levels);
+
+  const types =
+    criteria.types === undefined ? undefined : new Set(criteria.types);
+
+  return regions.filter((region) => {
+    if (ids !== undefined && !ids.has(region.id)) {
+      return false;
+    }
+
+    if (codes !== undefined && !codes.has(region.code)) {
+      return false;
+    }
+
+    if (
+      criteria.parentId !== undefined &&
+      region.parentId !== criteria.parentId
+    ) {
+      return false;
+    }
+
+    if (levels !== undefined && !levels.has(region.level)) {
+      return false;
+    }
+
+    if (types !== undefined && !types.has(region.type)) {
+      return false;
+    }
+
+    return true;
   });
 }

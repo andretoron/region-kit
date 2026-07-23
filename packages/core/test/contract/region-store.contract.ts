@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import {
+  QueryValidationError,
+  RegionNotFoundError,
+} from "../../src/errors/index.js";
 import type { PageInfo } from "../../src/query/index.js";
 import type { RegionStore } from "../../src/store/index.js";
 
@@ -314,6 +318,547 @@ export function defineRegionStoreContract(
 
       expect(result.items).toEqual([]);
       expect(result.page.hasMore).toBe(false);
+    });
+
+    it("searches primary names using contains matching by default", async () => {
+      const result = await currentStore().search("bandung");
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+      ]);
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-REG-BDG",
+          }),
+          matchedField: "name",
+          matchedValue: "Kabupaten Bandung",
+        }),
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-CITY-BDG",
+          }),
+          matchedField: "name",
+          matchedValue: "Kota Bandung",
+        }),
+      ]);
+    });
+
+    it("reports exact alias matches", async () => {
+      const result = await currentStore().search("Bandung", {
+        match: "exact",
+      });
+
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-REG-BDG",
+          }),
+          matchedField: "alias",
+          matchedValue: "Bandung",
+        }),
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-CITY-BDG",
+          }),
+          matchedField: "alias",
+          matchedValue: "Bandung",
+        }),
+      ]);
+    });
+
+    it("searches aliases", async () => {
+      const result = await currentStore().search("west");
+
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB",
+          }),
+          matchedField: "alias",
+          matchedValue: "West Java",
+        }),
+      ]);
+    });
+
+    it("filters search by parent id", async () => {
+      const result = await currentStore().search("a", {
+        parentId: "ID-JB",
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("filters search by levels", async () => {
+      const result = await currentStore().search("a", {
+        levels: [1],
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual(["ID-JB"]);
+    });
+
+    it("filters search by types", async () => {
+      const result = await currentStore().search("i", {
+        types: ["district"],
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG-DISTRICT",
+        "ID-JB-REG-BDG-DISTRICT",
+      ]);
+    });
+
+    it("combines search filters using AND", async () => {
+      const result = await currentStore().search("bandung", {
+        parentId: "ID-JB",
+        levels: [2],
+        types: ["city"],
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("supports prefix search matching", async () => {
+      const result = await currentStore().search("kota", {
+        match: "prefix",
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("supports custom search sorting", async () => {
+      const result = await currentStore().search("bandung", {
+        sortBy: "code",
+        direction: "desc",
+      });
+
+      expect(result.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+        "ID-JB-REG-BDG",
+      ]);
+    });
+
+    it("applies search pagination after sorting", async () => {
+      const firstPage = await currentStore().search("bandung", {
+        limit: 1,
+        offset: 0,
+      });
+      const secondPage = await currentStore().search("bandung", {
+        limit: 1,
+        offset: 1,
+      });
+
+      expect(firstPage.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-REG-BDG",
+      ]);
+      expect(secondPage.items.map((item) => item.region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+      expectPageInfo(firstPage.page, {
+        limit: 1,
+        offset: 0,
+        hasMore: true,
+        total: 2,
+      });
+      expectPageInfo(secondPage.page, {
+        limit: 1,
+        offset: 1,
+        hasMore: false,
+        total: 2,
+      });
+    });
+
+    it("returns an empty search page", async () => {
+      const result = await currentStore().search("sulawesi");
+
+      expect(result.items).toEqual([]);
+      expect(result.page.hasMore).toBe(false);
+    });
+
+    it("rejects invalid search input asynchronously", async () => {
+      const result = currentStore().search("");
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("rejects invalid search options", async () => {
+      await expect(
+        currentStore().search("bandung", {
+          match: "fuzzy" as never,
+        }),
+      ).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("does not expose mutable internal search state", async () => {
+      const first = await currentStore().search("bandung");
+      const firstItem = first.items[0];
+
+      expect(firstItem).toBeDefined();
+
+      if (firstItem === undefined) {
+        return;
+      }
+
+      attemptMutation(() =>
+        Reflect.set(firstItem.region, "name", "Mutated Name"),
+      );
+      attemptMutation(() => Reflect.set(firstItem, "matchedValue", "Mutated"));
+
+      const aliases = firstItem.region.aliases;
+
+      if (aliases !== undefined) {
+        attemptMutation(() => Reflect.set(aliases, "0", "Mutated Alias"));
+      }
+
+      const second = await currentStore().search("bandung");
+
+      expect(second.items[0]).toEqual(
+        expect.objectContaining({
+          region: expect.objectContaining({
+            id: "ID-JB-REG-BDG",
+            name: "Kabupaten Bandung",
+            aliases: ["Bandung"],
+          }),
+          matchedField: "name",
+          matchedValue: "Kabupaten Bandung",
+        }),
+      );
+    });
+
+    it("filters all regions with empty criteria in default order", async () => {
+      const result = await currentStore().filter({});
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID",
+        "ID-JB",
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+        "ID-JB-CITY-BDG-DISTRICT",
+        "ID-JB-REG-BDG-DISTRICT",
+      ]);
+    });
+
+    it("filters regions by ids", async () => {
+      const result = await currentStore().filter({
+        ids: ["ID-JB-CITY-BDG", "ID"],
+      });
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID",
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("filters regions by codes", async () => {
+      const result = await currentStore().filter({
+        codes: ["01"],
+      });
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG-DISTRICT",
+        "ID-JB-REG-BDG-DISTRICT",
+      ]);
+    });
+
+    it("filters root regions with a null parent id", async () => {
+      const result = await currentStore().filter({
+        parentId: null,
+      });
+
+      expect(result.items.map((region) => region.id)).toEqual(["ID"]);
+    });
+
+    it("filters regions by levels and types", async () => {
+      const result = await currentStore().filter({
+        levels: [2, 3],
+        types: ["city", "district"],
+      });
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+        "ID-JB-CITY-BDG-DISTRICT",
+        "ID-JB-REG-BDG-DISTRICT",
+      ]);
+    });
+
+    it("combines filter fields with AND", async () => {
+      const result = await currentStore().filter({
+        parentId: "ID-JB",
+        levels: [2],
+        types: ["city"],
+      });
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("returns no filter matches for an empty criteria array", async () => {
+      const result = await currentStore().filter({
+        ids: [],
+      });
+
+      expect(result.items).toEqual([]);
+    });
+
+    it("applies filter pagination after default sorting", async () => {
+      const firstPage = await currentStore().filter(
+        {
+          levels: [2],
+        },
+        {
+          limit: 1,
+          offset: 0,
+        },
+      );
+      const secondPage = await currentStore().filter(
+        {
+          levels: [2],
+        },
+        {
+          limit: 1,
+          offset: 1,
+        },
+      );
+
+      expect(firstPage.items.map((region) => region.id)).toEqual([
+        "ID-JB-REG-BDG",
+      ]);
+      expect(secondPage.items.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+      expectPageInfo(firstPage.page, {
+        limit: 1,
+        offset: 0,
+        hasMore: true,
+        total: 2,
+      });
+      expectPageInfo(secondPage.page, {
+        limit: 1,
+        offset: 1,
+        hasMore: false,
+        total: 2,
+      });
+    });
+
+    it("rejects invalid filter criteria", async () => {
+      await expect(
+        currentStore().filter({
+          levels: [-1],
+        }),
+      ).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("returns the parent of a region", async () => {
+      await expect(currentStore().parentOf("ID-JB-CITY-BDG")).resolves.toEqual(
+        expect.objectContaining({
+          id: "ID-JB",
+        }),
+      );
+    });
+
+    it("returns null for the root parent", async () => {
+      await expect(currentStore().parentOf("ID")).resolves.toBeNull();
+    });
+
+    it("rejects an unknown parent target", async () => {
+      await expect(currentStore().parentOf("unknown")).rejects.toBeInstanceOf(
+        RegionNotFoundError,
+      );
+    });
+
+    it("returns children in default code order", async () => {
+      const result = await currentStore().childrenOf("ID-JB");
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("returns an empty children page for a leaf", async () => {
+      const result = await currentStore().childrenOf("ID-JB-CITY-BDG-DISTRICT");
+
+      expect(result.items).toEqual([]);
+      expectPageInfo(result.page, {
+        limit: 50,
+        offset: 0,
+        hasMore: false,
+        total: 0,
+      });
+    });
+
+    it("applies stable children pagination", async () => {
+      const firstPage = await currentStore().childrenOf("ID-JB", {
+        limit: 1,
+        offset: 0,
+      });
+      const secondPage = await currentStore().childrenOf("ID-JB", {
+        limit: 1,
+        offset: 1,
+      });
+
+      expect(firstPage.items.map((region) => region.id)).toEqual([
+        "ID-JB-REG-BDG",
+      ]);
+      expect(secondPage.items.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("supports custom children sorting", async () => {
+      const result = await currentStore().childrenOf("ID-JB", {
+        sortBy: "name",
+        direction: "desc",
+      });
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+        "ID-JB-REG-BDG",
+      ]);
+    });
+
+    it("rejects an unknown children target", async () => {
+      await expect(currentStore().childrenOf("unknown")).rejects.toBeInstanceOf(
+        RegionNotFoundError,
+      );
+    });
+
+    it("returns ancestors from direct parent through root", async () => {
+      const result = await currentStore().ancestorsOf(
+        "ID-JB-CITY-BDG-DISTRICT",
+      );
+
+      expect(result.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG",
+        "ID-JB",
+        "ID",
+      ]);
+    });
+
+    it("returns no ancestors for the root", async () => {
+      await expect(currentStore().ancestorsOf("ID")).resolves.toEqual([]);
+    });
+
+    it("rejects an unknown ancestors target", async () => {
+      await expect(
+        currentStore().ancestorsOf("unknown"),
+      ).rejects.toBeInstanceOf(RegionNotFoundError);
+    });
+
+    it("returns descendants in default level, code, and id order", async () => {
+      const result = await currentStore().descendantsOf("ID-JB");
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+        "ID-JB-CITY-BDG-DISTRICT",
+        "ID-JB-REG-BDG-DISTRICT",
+      ]);
+    });
+
+    it("returns no descendants at max depth zero", async () => {
+      const result = await currentStore().descendantsOf("ID-JB", {
+        maxDepth: 0,
+      });
+
+      expect(result.items).toEqual([]);
+    });
+
+    it("limits descendants to direct children at max depth one", async () => {
+      const result = await currentStore().descendantsOf("ID-JB", {
+        maxDepth: 1,
+      });
+
+      expect(result.items.map((region) => region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+      ]);
+    });
+
+    it("returns an empty descendants page for a leaf", async () => {
+      const result = await currentStore().descendantsOf(
+        "ID-JB-CITY-BDG-DISTRICT",
+      );
+
+      expect(result.items).toEqual([]);
+    });
+
+    it("applies stable descendants pagination", async () => {
+      const firstPage = await currentStore().descendantsOf("ID-JB", {
+        limit: 2,
+        offset: 0,
+      });
+      const secondPage = await currentStore().descendantsOf("ID-JB", {
+        limit: 2,
+        offset: 2,
+      });
+
+      expect(firstPage.items.map((region) => region.id)).toEqual([
+        "ID-JB-REG-BDG",
+        "ID-JB-CITY-BDG",
+      ]);
+      expect(secondPage.items.map((region) => region.id)).toEqual([
+        "ID-JB-CITY-BDG-DISTRICT",
+        "ID-JB-REG-BDG-DISTRICT",
+      ]);
+      expectPageInfo(firstPage.page, {
+        limit: 2,
+        offset: 0,
+        hasMore: true,
+        total: 4,
+      });
+      expectPageInfo(secondPage.page, {
+        limit: 2,
+        offset: 2,
+        hasMore: false,
+        total: 4,
+      });
+    });
+
+    it("rejects an unknown descendants target", async () => {
+      await expect(
+        currentStore().descendantsOf("unknown"),
+      ).rejects.toBeInstanceOf(RegionNotFoundError);
+    });
+
+    it("reports find validation through a rejected promise", async () => {
+      const result = currentStore().findByCode("");
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("reports filter validation through a rejected promise", async () => {
+      const result = currentStore().filter(null as never);
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("reports children validation through a rejected promise", async () => {
+      const result = currentStore().childrenOf("");
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
+    it("reports descendant validation through a rejected promise", async () => {
+      const result = currentStore().descendantsOf("ID", {
+        maxDepth: -1,
+      });
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).rejects.toBeInstanceOf(QueryValidationError);
     });
 
     it("does not expose mutable internal region state", async () => {

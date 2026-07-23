@@ -1269,7 +1269,8 @@ const result = await regions.findByCode("3273", {
 });
 ```
 
-Public API tidak menyediakan `getByCode()` pada MVP karena nama tersebut menyiratkan satu hasil unik.
+Public API menggunakan `findByCode()` pada MVP karena code dapat tidak unik dan
+nama lookup singular akan menyiratkan satu hasil unik.
 
 ### Pencarian Nama
 
@@ -3707,6 +3708,8 @@ Benchmark ini masih bersifat informational dan menggunakan dataset sintetis.
 
 ### Milestone 3 — Public Query API
 
+**Status:** Diimplementasikan
+
 **Tujuan:** menyelesaikan kemampuan utama pengguna.
 
 Cakupan:
@@ -3738,6 +3741,14 @@ Kriteria selesai:
 - Target traversal tidak dikenal menghasilkan error yang benar.
 - Query setelah `close()` ditolak.
 - Public API tidak bergantung pada detail memory store.
+
+Implementasi Milestone 3 menyediakan facade public `RegionKit`, JSON file
+loading, kontrak `RegionStore` yang storage-agnostic, validasi query, pagination,
+sorting deterministik, text search terhadap `name` dan `aliases`, filtering,
+hierarchy traversal, operational error classes, dan lifecycle closed-state.
+
+Shared `RegionStore` contract tests digunakan untuk menjaga semantic query agar
+tetap konsisten antara memory store dan adapter storage masa depan.
 
 ### Milestone 4 — Package Hardening
 
@@ -4052,3 +4063,4 @@ Sebuah milestone dianggap selesai hanya jika:
 | 2026-07-13 | Menambahkan lisensi serta panduan dan template kontribusi repository.                       |
 | 2026-07-18 | Mencatat implementasi Milestone 1 — Dataset Contract dan Validation.                        |
 | 2026-07-21 | Mencatat implementasi Milestone 2 — Memory Store dan benchmark awal.                        |
+| 2026-07-23 | Mencatat implementasi Milestone 3 — Public Query API dan facade `RegionKit`.                |

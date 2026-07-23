@@ -6,12 +6,15 @@ import { buildMemoryIndexes } from "./memory-indexes.js";
 
 import {
   createMemoryRegionPage,
-  DEFAULT_MEMORY_PAGE_LIMIT,
   filterMemoryRegions,
+  filterMemoryRegionsByCriteria,
   findMemoryNameCandidates,
 } from "./memory-query.js";
 
+import { DEFAULT_PAGE_LIMIT } from "../query/constants.js";
+
 import { prepareMemoryDataset } from "./prepare-memory-dataset.js";
+import { QueryValidationError } from "../errors/index.js";
 
 function createQueryFixture() {
   const prepared = prepareMemoryDataset(
@@ -43,6 +46,124 @@ describe("filterMemoryRegions", () => {
     const result = filterMemoryRegions(prepared.regions, {});
 
     expect(result).toEqual(prepared.regions);
+  });
+});
+
+describe("filterMemoryRegionsByCriteria", () => {
+  it("returns all regions for empty criteria", () => {
+    const { prepared } = createQueryFixture();
+
+    expect(filterMemoryRegionsByCriteria(prepared.regions, {})).toEqual(
+      prepared.regions,
+    );
+  });
+
+  it("filters by ids", () => {
+    const { prepared } = createQueryFixture();
+
+    const result = filterMemoryRegionsByCriteria(prepared.regions, {
+      ids: ["ID", "ID-JB-CITY-BDG"],
+    });
+
+    expect(result.map((region) => region.id)).toEqual(["ID", "ID-JB-CITY-BDG"]);
+  });
+
+  it("filters by codes", () => {
+    const { prepared } = createQueryFixture();
+
+    const result = filterMemoryRegionsByCriteria(prepared.regions, {
+      codes: ["01"],
+    });
+
+    expect(result.map((region) => region.id)).toEqual([
+      "ID-JB-CITY-BDG-DISTRICT",
+      "ID-JB-REG-BDG-DISTRICT",
+    ]);
+  });
+
+  it("filters by parent id", () => {
+    const { prepared } = createQueryFixture();
+
+    const result = filterMemoryRegionsByCriteria(prepared.regions, {
+      parentId: "ID-JB",
+    });
+
+    expect(result.map((region) => region.id)).toEqual([
+      "ID-JB-CITY-BDG",
+      "ID-JB-REG-BDG",
+    ]);
+  });
+
+  it("filters root regions with a null parent id", () => {
+    const { prepared } = createQueryFixture();
+
+    const result = filterMemoryRegionsByCriteria(prepared.regions, {
+      parentId: null,
+    });
+
+    expect(result.map((region) => region.id)).toEqual(["ID"]);
+  });
+
+  it("filters by multiple levels", () => {
+    const { prepared } = createQueryFixture();
+
+    const result = filterMemoryRegionsByCriteria(prepared.regions, {
+      levels: [2, 3],
+    });
+
+    expect(result.map((region) => region.id)).toEqual([
+      "ID-JB-CITY-BDG",
+      "ID-JB-REG-BDG",
+      "ID-JB-CITY-BDG-DISTRICT",
+      "ID-JB-REG-BDG-DISTRICT",
+    ]);
+  });
+
+  it("filters by multiple types", () => {
+    const { prepared } = createQueryFixture();
+
+    const result = filterMemoryRegionsByCriteria(prepared.regions, {
+      types: ["city", "district"],
+    });
+
+    expect(result.map((region) => region.id)).toEqual([
+      "ID-JB-CITY-BDG",
+      "ID-JB-CITY-BDG-DISTRICT",
+      "ID-JB-REG-BDG-DISTRICT",
+    ]);
+  });
+
+  it("combines criteria fields with AND", () => {
+    const { prepared } = createQueryFixture();
+
+    const result = filterMemoryRegionsByCriteria(prepared.regions, {
+      parentId: "ID-JB",
+      levels: [2],
+      types: ["city"],
+    });
+
+    expect(result.map((region) => region.id)).toEqual(["ID-JB-CITY-BDG"]);
+  });
+
+  it("returns no regions for an empty criteria array", () => {
+    const { prepared } = createQueryFixture();
+
+    expect(
+      filterMemoryRegionsByCriteria(prepared.regions, {
+        levels: [],
+      }),
+    ).toEqual([]);
+  });
+
+  it("does not mutate the input regions", () => {
+    const { prepared } = createQueryFixture();
+    const originalOrder = prepared.regions.map((region) => region.id);
+
+    filterMemoryRegionsByCriteria(prepared.regions, {
+      types: ["district"],
+    });
+
+    expect(prepared.regions.map((region) => region.id)).toEqual(originalOrder);
   });
 });
 
@@ -137,7 +258,7 @@ describe("createMemoryRegionPage", () => {
     expect(result.items).toHaveLength(prepared.regions.length);
 
     expect(result.page).toEqual({
-      limit: DEFAULT_MEMORY_PAGE_LIMIT,
+      limit: DEFAULT_PAGE_LIMIT,
       offset: 0,
       hasMore: false,
       total: prepared.regions.length,
@@ -246,5 +367,19 @@ describe("createMemoryRegionPage", () => {
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.items)).toBe(true);
     expect(Object.isFrozen(result.page)).toBe(true);
+  });
+
+  it.each([
+    { limit: 0 },
+    { limit: 1001 },
+    { limit: 1.5 },
+    { offset: -1 },
+    { offset: 1.5 },
+  ])("rejects invalid pagination %#", (options) => {
+    const { prepared } = createQueryFixture();
+
+    expect(() => createMemoryRegionPage(prepared.regions, options)).toThrow(
+      QueryValidationError,
+    );
   });
 });

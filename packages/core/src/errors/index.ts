@@ -12,3 +12,10 @@ export type {
   DatasetValidationPath,
   DatasetValidationPathSegment,
 } from "./dataset-validation-error.js";
+
+export { QueryValidationError } from "./query-validation-error.js";
+export { RegionNotFoundError } from "./region-not-found-error.js";
+export { RegionKitClosedError } from "./region-kit-closed-error.js";
+export { DatasetLoadError } from "./dataset-load-error.js";
+
+export type { DatasetLoadStage } from "./dataset-load-error.js";
