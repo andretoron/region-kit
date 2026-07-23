@@ -206,6 +206,7 @@ describe("resolveFilterQuery", () => {
   });
 
   it.each([
+    undefined,
     null,
     [],
     "invalid",

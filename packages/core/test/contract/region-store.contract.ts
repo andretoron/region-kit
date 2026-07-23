@@ -547,6 +547,34 @@ export function defineRegionStoreContract(
       ]);
     });
 
+    it("preserves compound filter sorting when defaults are explicit", async () => {
+      const [implicit, explicitDirection, explicitField, explicitDefaults] =
+        await Promise.all([
+          currentStore().filter({}),
+          currentStore().filter({}, { direction: "asc" }),
+          currentStore().filter({}, { sortBy: "level" }),
+          currentStore().filter(
+            {},
+            {
+              sortBy: "level",
+              direction: "asc",
+            },
+          ),
+        ]);
+
+      const implicitIds = implicit.items.map((region) => region.id);
+
+      expect(explicitDirection.items.map((region) => region.id)).toEqual(
+        implicitIds,
+      );
+      expect(explicitField.items.map((region) => region.id)).toEqual(
+        implicitIds,
+      );
+      expect(explicitDefaults.items.map((region) => region.id)).toEqual(
+        implicitIds,
+      );
+    });
+
     it("filters regions by ids", async () => {
       const result = await currentStore().filter({
         ids: ["ID-JB-CITY-BDG", "ID"],
@@ -658,6 +686,13 @@ export function defineRegionStoreContract(
       ).rejects.toBeInstanceOf(QueryValidationError);
     });
 
+    it("rejects missing filter criteria asynchronously", async () => {
+      const result = currentStore().filter(undefined as never);
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).rejects.toBeInstanceOf(QueryValidationError);
+    });
+
     it("returns the parent of a region", async () => {
       await expect(currentStore().parentOf("ID-JB-CITY-BDG")).resolves.toEqual(
         expect.objectContaining({
@@ -764,6 +799,31 @@ export function defineRegionStoreContract(
         "ID-JB-CITY-BDG-DISTRICT",
         "ID-JB-REG-BDG-DISTRICT",
       ]);
+    });
+
+    it("preserves compound descendant sorting when defaults are explicit", async () => {
+      const [implicit, explicitDirection, explicitField, explicitDefaults] =
+        await Promise.all([
+          currentStore().descendantsOf("ID-JB"),
+          currentStore().descendantsOf("ID-JB", { direction: "asc" }),
+          currentStore().descendantsOf("ID-JB", { sortBy: "level" }),
+          currentStore().descendantsOf("ID-JB", {
+            sortBy: "level",
+            direction: "asc",
+          }),
+        ]);
+
+      const implicitIds = implicit.items.map((region) => region.id);
+
+      expect(explicitDirection.items.map((region) => region.id)).toEqual(
+        implicitIds,
+      );
+      expect(explicitField.items.map((region) => region.id)).toEqual(
+        implicitIds,
+      );
+      expect(explicitDefaults.items.map((region) => region.id)).toEqual(
+        implicitIds,
+      );
     });
 
     it("returns no descendants at max depth zero", async () => {
