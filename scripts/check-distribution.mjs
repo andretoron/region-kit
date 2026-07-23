@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import {
+  cpSync,
   existsSync,
   mkdtempSync,
   readFileSync,
@@ -47,6 +48,13 @@ const forbiddenPathPatterns = [
   /(^|\/)[^/]+\.(?:db|dump|pem|sqlite|sqlite3|sql)$/i,
 ];
 
+const javascriptConsumerFixtureDirectory = join(
+  repositoryRoot,
+  "test",
+  "consumer-smoke",
+  "javascript-esm",
+);
+
 function runPnpm(arguments_, options = {}) {
   const pnpmCliPath = process.env.npm_execpath;
 
@@ -77,7 +85,9 @@ function auditPackageFiles(files) {
   );
   if (missingFiles.length > 0) {
     throw new Error(
-      `Packed tarball is missing required files:\n${missingFiles.map((path) => `- ${path}`).join("\n")}`,
+      `Packed tarball is missing required files:\n${missingFiles
+        .map((path) => `- ${path}`)
+        .join("\n")}`,
     );
   }
 
@@ -87,7 +97,9 @@ function auditPackageFiles(files) {
   });
   if (unexpectedFiles.length > 0) {
     throw new Error(
-      `Packed tarball contains unexpected top-level files:\n${unexpectedFiles.map((path) => `- ${path}`).join("\n")}`,
+      `Packed tarball contains unexpected top-level files:\n${unexpectedFiles
+        .map((path) => `- ${path}`)
+        .join("\n")}`,
     );
   }
 
@@ -96,7 +108,9 @@ function auditPackageFiles(files) {
   );
   if (forbiddenFiles.length > 0) {
     throw new Error(
-      `Packed tarball contains forbidden files:\n${forbiddenFiles.map((path) => `- ${path}`).join("\n")}`,
+      `Packed tarball contains forbidden files:\n${forbiddenFiles
+        .map((path) => `- ${path}`)
+        .join("\n")}`,
     );
   }
 
@@ -153,6 +167,41 @@ function auditSourceMaps() {
   }
 }
 
+function runJavaScriptConsumer(tarballPath) {
+  const consumerDirectory = join(temporaryDirectory, "javascript-esm");
+  const packageStoreDirectory = join(temporaryDirectory, "pnpm-store");
+
+  cpSync(javascriptConsumerFixtureDirectory, consumerDirectory, {
+    recursive: true,
+  });
+
+  console.log("Installing tarball in the JavaScript ESM consumer...");
+
+  runPnpm(
+    [
+      "add",
+      "--ignore-workspace",
+      "--offline",
+      "--ignore-scripts",
+      "--save-exact",
+      "--store-dir",
+      packageStoreDirectory,
+      tarballPath,
+    ],
+    {
+      cwd: consumerDirectory,
+      stdio: "inherit",
+    },
+  );
+
+  console.log("Running the JavaScript ESM consumer smoke test...");
+
+  execFileSync(process.execPath, ["index.js"], {
+    cwd: consumerDirectory,
+    stdio: "inherit",
+  });
+}
+
 try {
   console.log("Building region-kit from a clean dist directory...");
   runPnpm(["--filter", "region-kit", "build"], { stdio: "inherit" });
@@ -186,6 +235,7 @@ try {
 
   const packagePaths = auditPackageFiles(packReport.files);
   auditSourceMaps();
+  runJavaScriptConsumer(tarballPath);
 
   console.log(
     `Distribution check passed for ${packReport.name}@${packReport.version} (${packagePaths.length} files).`,
