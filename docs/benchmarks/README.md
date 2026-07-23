@@ -77,3 +77,72 @@ inisialisasi store.
 - Performance gate baru layak dipertimbangkan setelah dataset dikunci,
   beberapa baseline environment tersedia, variasi normal diketahui, dan
   threshold regresi dapat dipertanggungjawabkan.
+
+## Public API — Milestone 4
+
+Baseline Milestone 4 mengukur operasi melalui public entry point `region-kit`:
+
+- Inisialisasi melalui `RegionKit.fromData()` dan `RegionKit.fromFile()`.
+- Lookup berdasarkan ID dan code.
+- Exact, prefix, dan contains search.
+- Filtering dan pagination pada hasil besar.
+- Children, ancestors, dan descendants traversal.
+- Lifecycle `close()`.
+
+Hasil lengkap beserta informasi environment tersedia di
+[`public-api-milestone-4.json`](./public-api-milestone-4.json).
+
+### Menjalankan benchmark public API
+
+Jalankan dari repository root:
+
+```bash
+pnpm benchmark:public-api
+```
+
+Command tersebut membangun package, membuat dataset dan file sementara,
+menjalankan warmup serta sepuluh timing iterations, memperbarui baseline JSON,
+lalu membersihkan file sementara.
+
+### Dataset dan konfigurasi public API
+
+Dataset sintetis menggunakan pohon seimbang agar traversal tidak diukur pada
+hierarki datar:
+
+| Parameter              |     Nilai |
+| ---------------------- | --------: |
+| Region                 |    11.111 |
+| Branching factor       |        10 |
+| Kedalaman hierarki     |         4 |
+| Leaf region            |    10.000 |
+| Ukuran JSON serialized | 1,929 MiB |
+| Warmup iterations      |         3 |
+| Timing iterations      |        10 |
+| Pagination limit       |       100 |
+| Pagination offset      |     5.000 |
+
+### Baseline public API tersimpan
+
+Baseline berikut dihasilkan pada Node.js 24.18.0, Windows x64, menggunakan Intel
+Core i5-11400H:
+
+| Pengukuran             | Minimum |  Median | Maksimum |
+| ---------------------- | ------: | ------: | -------: |
+| `fromData()`           | 100,232 | 118,077 |  144,112 |
+| `fromFile()`           |  73,358 |  92,150 |  114,034 |
+| `getById()`            |   0,004 |   0,005 |    0,023 |
+| `findByCode()`         |   0,008 |   0,012 |    0,018 |
+| Exact name search      |   8,981 |   9,200 |   14,197 |
+| Prefix search          |   9,756 |  10,064 |   12,147 |
+| Contains search        |   6,523 |   6,756 |    7,861 |
+| Filtering              |   0,559 |   0,582 |    0,754 |
+| Pagination hasil besar |   1,278 |   1,343 |    1,488 |
+| `childrenOf()`         |   0,025 |   0,027 |    0,035 |
+| `ancestorsOf()`        |   0,010 |   0,011 |    0,017 |
+| `descendantsOf()`      |   1,935 |   2,055 |    2,119 |
+| `close()`              |   0,006 |   0,007 |    0,009 |
+
+Seluruh angka timing menggunakan milidetik. `fromFile()` mencakup pembacaan
+file, JSON parsing, validasi, snapshot creation, dan pembangunan index, tetapi
+tidak mencakup pembuatan file sementara. Hasil tetap bersifat informasional dan
+tidak menjadi threshold CI.

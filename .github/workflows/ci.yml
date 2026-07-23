@@ -49,11 +49,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Test with coverage
+        run: pnpm test:coverage
+
       - name: Build
         run: pnpm build
 
       - name: Validate package
         run: pnpm check:package
+
+      - name: Validate packed distribution
+        run: pnpm check:distribution
 
   compatibility:
     name: Node.js ${{ matrix.node-version }}
@@ -86,3 +92,6 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Validate packed distribution
+        run: pnpm check:distribution

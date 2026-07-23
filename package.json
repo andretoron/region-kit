@@ -15,11 +15,13 @@
     "format:check": "prettier . --check",
     "docs": "pnpm --filter region-kit docs",
     "check:package": "pnpm -r check:package",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm check:package",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm check:package && pnpm check:distribution",
     "benchmark:memory": "pnpm build && node --expose-gc scripts/benchmark-memory-store.mjs --output=docs/benchmarks/memory-store-milestone-2.json",
+    "benchmark:public-api": "pnpm build && node scripts/benchmark-public-api.mjs --output=docs/benchmarks/public-api-milestone-4.json",
     "changeset": "changeset",
     "changeset:status": "changeset status",
-    "version-packages": "changeset version"
+    "version-packages": "changeset version",
+    "check:distribution": "node scripts/check-distribution.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
