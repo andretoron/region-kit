@@ -80,6 +80,13 @@ function validateOptionsObject<T extends object>(
     return {} as T;
   }
 
+  return validateRequiredObject<T>(value, parameter);
+}
+
+function validateRequiredObject<T extends object>(
+  value: unknown,
+  parameter: string,
+): T {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new QueryValidationError(parameter, "Expected an object.");
   }
@@ -288,7 +295,7 @@ export function resolveFilterQuery(
   criteria: unknown,
   options: unknown,
 ): ResolvedFilterQuery {
-  const regionFilter = validateOptionsObject<RegionFilter>(
+  const regionFilter = validateRequiredObject<RegionFilter>(
     criteria,
     "criteria",
   );

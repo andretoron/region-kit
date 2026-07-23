@@ -162,8 +162,7 @@ export class MemoryRegionStore implements RegionStore {
     );
 
     const useDefaultSort =
-      resolved.options.sortBy === undefined &&
-      resolved.options.direction === undefined;
+      resolved.sort.sortBy === "level" && resolved.sort.direction === "asc";
 
     const sorted = sortRegions(
       filtered,
@@ -242,8 +241,7 @@ export class MemoryRegionStore implements RegionStore {
     );
 
     const useDefaultSort =
-      resolved.options.sortBy === undefined &&
-      resolved.options.direction === undefined;
+      resolved.sort.sortBy === "level" && resolved.sort.direction === "asc";
 
     const sorted = sortRegions(
       descendants,
