@@ -58,6 +58,9 @@ jobs:
       - name: Validate package
         run: pnpm check:package
 
+      - name: Validate packed distribution
+        run: pnpm check:distribution
+
   compatibility:
     name: Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
@@ -89,3 +92,6 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Validate packed distribution
+        run: pnpm check:distribution
