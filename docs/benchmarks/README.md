@@ -128,19 +128,19 @@ Core i5-11400H:
 
 | Pengukuran             | Minimum |  Median | Maksimum |
 | ---------------------- | ------: | ------: | -------: |
-| `fromData()`           |  91,794 | 107,635 |  150,675 |
-| `fromFile()`           |  69,671 |  83,383 |  129,914 |
-| `getById()`            |   0,004 |   0,005 |    0,021 |
-| `findByCode()`         |   0,008 |   0,012 |    0,030 |
-| Exact name search      |   8,463 |   8,859 |   13,716 |
-| Prefix search          |   9,405 |   9,974 |   10,678 |
-| Contains search        |   5,598 |   5,929 |    6,865 |
-| Filtering              |   0,531 |   0,548 |    0,695 |
-| Pagination hasil besar |   1,213 |   1,327 |    1,635 |
-| `childrenOf()`         |   0,023 |   0,026 |    0,034 |
-| `ancestorsOf()`        |   0,009 |   0,010 |    0,013 |
-| `descendantsOf()`      |   1,900 |   1,972 |    2,302 |
-| `close()`              |   0,005 |   0,006 |    0,008 |
+| `fromData()`           | 100,232 | 118,077 |  144,112 |
+| `fromFile()`           |  73,358 |  92,150 |  114,034 |
+| `getById()`            |   0,004 |   0,005 |    0,023 |
+| `findByCode()`         |   0,008 |   0,012 |    0,018 |
+| Exact name search      |   8,981 |   9,200 |   14,197 |
+| Prefix search          |   9,756 |  10,064 |   12,147 |
+| Contains search        |   6,523 |   6,756 |    7,861 |
+| Filtering              |   0,559 |   0,582 |    0,754 |
+| Pagination hasil besar |   1,278 |   1,343 |    1,488 |
+| `childrenOf()`         |   0,025 |   0,027 |    0,035 |
+| `ancestorsOf()`        |   0,010 |   0,011 |    0,017 |
+| `descendantsOf()`      |   1,935 |   2,055 |    2,119 |
+| `close()`              |   0,006 |   0,007 |    0,009 |
 
 Seluruh angka timing menggunakan milidetik. `fromFile()` mencakup pembacaan
 file, JSON parsing, validasi, snapshot creation, dan pembangunan index, tetapi

@@ -1,7 +1,7 @@
 {
   "benchmark": "public-api-milestone-4",
   "informational": true,
-  "generatedAt": "2026-07-23T16:02:16.471Z",
+  "generatedAt": "2026-07-23T17:52:07.080Z",
   "environment": {
     "node": "v24.18.0",
     "platform": "win32",
@@ -29,79 +29,79 @@
   "timingsMilliseconds": {
     "initialization": {
       "fromData": {
-        "minimum": 91.794,
-        "median": 107.635,
-        "maximum": 150.675
+        "minimum": 100.232,
+        "median": 118.077,
+        "maximum": 144.112
       },
       "fromFile": {
-        "minimum": 69.671,
-        "median": 83.383,
-        "maximum": 129.914
+        "minimum": 73.358,
+        "median": 92.15,
+        "maximum": 114.034
       }
     },
     "lookup": {
       "getById": {
         "minimum": 0.004,
         "median": 0.005,
-        "maximum": 0.021
+        "maximum": 0.023
       },
       "findByCode": {
         "minimum": 0.008,
         "median": 0.012,
-        "maximum": 0.03
+        "maximum": 0.018
       }
     },
     "search": {
       "exactName": {
-        "minimum": 8.463,
-        "median": 8.859,
-        "maximum": 13.716
+        "minimum": 8.981,
+        "median": 9.2,
+        "maximum": 14.197
       },
       "prefix": {
-        "minimum": 9.405,
-        "median": 9.974,
-        "maximum": 10.678
+        "minimum": 9.756,
+        "median": 10.064,
+        "maximum": 12.147
       },
       "contains": {
-        "minimum": 5.598,
-        "median": 5.929,
-        "maximum": 6.865
+        "minimum": 6.523,
+        "median": 6.756,
+        "maximum": 7.861
       }
     },
     "filtering": {
       "filter": {
-        "minimum": 0.531,
-        "median": 0.548,
-        "maximum": 0.695
+        "minimum": 0.559,
+        "median": 0.582,
+        "maximum": 0.754
       },
       "largeResultPagination": {
-        "minimum": 1.213,
-        "median": 1.327,
-        "maximum": 1.635
+        "minimum": 1.278,
+        "median": 1.343,
+        "maximum": 1.488
       }
     },
     "traversal": {
       "childrenOf": {
-        "minimum": 0.023,
-        "median": 0.026,
-        "maximum": 0.034
+        "minimum": 0.025,
+        "median": 0.027,
+        "maximum": 0.035
       },
       "ancestorsOf": {
-        "minimum": 0.009,
-        "median": 0.01,
-        "maximum": 0.013
+        "minimum": 0.01,
+        "median": 0.011,
+        "maximum": 0.017
       },
       "descendantsOf": {
-        "minimum": 1.9,
-        "median": 1.972,
-        "maximum": 2.302
+        "minimum": 1.935,
+        "median": 2.055,
+        "maximum": 2.119
       }
     },
     "lifecycle": {
       "close": {
-        "minimum": 0.005,
-        "median": 0.006,
-        "maximum": 0.008
+        "minimum": 0.006,
+        "median": 0.007,
+        "maximum": 0.009
       }
     }
   },
