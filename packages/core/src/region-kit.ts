@@ -2,6 +2,8 @@ import type { DatasetMetadata, Region } from "./dataset/index.js";
 
 import { RegionKitClosedError, RegionNotFoundError } from "./errors/index.js";
 
+import { loadRegionDatasetFile } from "./loaders/load-region-dataset-file.js";
+
 import type {
   DescendantOptions,
   FindByCodeOptions,
@@ -37,6 +39,12 @@ export class RegionKit {
 
   private constructor(store: RegionStore) {
     this.#store = store;
+  }
+
+  static async fromFile(source: string | URL): Promise<RegionKit> {
+    const dataset = await loadRegionDatasetFile(source);
+
+    return RegionKit.fromData(dataset);
   }
 
   static async fromData(dataset: unknown): Promise<RegionKit> {

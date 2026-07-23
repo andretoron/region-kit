@@ -12,6 +12,7 @@ export { RegionKitError } from "./errors/index.js";
 export type { RegionKitErrorCode } from "./errors/index.js";
 
 export {
+  DatasetLoadError,
   DatasetValidationError,
   QueryValidationError,
   RegionKitClosedError,
@@ -19,6 +20,7 @@ export {
 } from "./errors/index.js";
 
 export type {
+  DatasetLoadStage,
   DatasetValidationIssue,
   DatasetValidationIssueCode,
   DatasetValidationPath,

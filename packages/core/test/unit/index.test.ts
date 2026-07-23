@@ -38,6 +38,11 @@ describe("public entry point", () => {
     expect(core.validateRegionDataset).toBeTypeOf("function");
   });
 
+  it("exports the public facade and dataset load error", () => {
+    expect(core.RegionKit).toBeTypeOf("function");
+    expect(core.DatasetLoadError).toBeTypeOf("function");
+  });
+
   it("validates datasets through the public API", () => {
     const input: unknown = createValidDataset();
 
@@ -61,5 +66,7 @@ describe("public entry point", () => {
     expect(core).not.toHaveProperty("parseDatasetSchemaVersion");
     expect(core).not.toHaveProperty("validateDatasetStructure");
     expect(core).not.toHaveProperty("validateDatasetHierarchy");
+    expect(core).not.toHaveProperty("loadRegionDatasetFile");
+    expect(core).not.toHaveProperty("resolveDatasetFileSource");
   });
 });

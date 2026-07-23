@@ -1,6 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  DatasetLoadError,
   DatasetValidationError,
   RegionKitClosedError,
   RegionNotFoundError,
@@ -16,6 +22,104 @@ function createStore(): MemoryRegionStore {
     structuredClone(regionStoreContractDataset),
   );
 }
+
+describe("RegionKit.fromFile", () => {
+  let directory: string;
+
+  beforeEach(async () => {
+    directory = await mkdtemp(join(tmpdir(), "region-kit-from-file-"));
+  });
+
+  afterEach(async () => {
+    await rm(directory, {
+      recursive: true,
+      force: true,
+    });
+  });
+
+  it("creates a RegionKit instance from a JSON file", async () => {
+    const path = join(directory, "regions.json");
+
+    await writeFile(path, JSON.stringify(regionStoreContractDataset), "utf8");
+
+    const regions = await RegionKit.fromFile(path);
+
+    await expect(regions.getById("ID-JB")).resolves.toEqual(
+      expect.objectContaining({
+        id: "ID-JB",
+        name: "Jawa Barat",
+      }),
+    );
+
+    await regions.close();
+  });
+
+  it("accepts a file URL", async () => {
+    const path = join(directory, "regions.json");
+
+    await writeFile(path, JSON.stringify(regionStoreContractDataset), "utf8");
+
+    const regions = await RegionKit.fromFile(pathToFileURL(path));
+
+    await expect(regions.getMetadata()).resolves.toMatchObject({
+      datasetVersion: "2026.7.0",
+    });
+
+    await regions.close();
+  });
+
+  it("reports file read failures", async () => {
+    const path = join(directory, "missing.json");
+
+    await expect(RegionKit.fromFile(path)).rejects.toMatchObject({
+      code: "DATASET_LOAD_FAILED",
+      stage: "read",
+      source: path,
+      cause: expect.any(Error),
+    });
+  });
+
+  it("reports malformed JSON separately from dataset validation", async () => {
+    const path = join(directory, "malformed.json");
+
+    await writeFile(path, "{invalid", "utf8");
+
+    await expect(RegionKit.fromFile(path)).rejects.toMatchObject({
+      code: "DATASET_LOAD_FAILED",
+      stage: "parse",
+      source: path,
+      cause: expect.any(SyntaxError),
+    });
+  });
+
+  it("preserves DatasetValidationError for invalid datasets", async () => {
+    const path = join(directory, "invalid-dataset.json");
+
+    await writeFile(
+      path,
+      JSON.stringify({
+        schemaVersion: "1.0.0",
+      }),
+      "utf8",
+    );
+
+    try {
+      await RegionKit.fromFile(path);
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(DatasetValidationError);
+      expect(error).not.toBeInstanceOf(DatasetLoadError);
+    }
+  });
+
+  it("reports invalid file sources through rejected promises", async () => {
+    const result = RegionKit.fromFile("" as never);
+
+    expect(result).toBeInstanceOf(Promise);
+
+    await expect(result).rejects.toBeInstanceOf(TypeError);
+  });
+});
 
 describe("RegionKit.fromData", () => {
   it("creates a working RegionKit instance", async () => {
