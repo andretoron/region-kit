@@ -1,21 +1,19 @@
 export type {
   DatasetCountry,
+  DatasetMetadata,
   DatasetSource,
   Region,
   RegionDataset,
-  DatasetMetadata,
 } from "./dataset/index.js";
 
 export { validateRegionDataset } from "./dataset/index.js";
-
-export { RegionKitError } from "./errors/index.js";
-export type { RegionKitErrorCode } from "./errors/index.js";
 
 export {
   DatasetLoadError,
   DatasetValidationError,
   QueryValidationError,
   RegionKitClosedError,
+  RegionKitError,
   RegionNotFoundError,
 } from "./errors/index.js";
 
@@ -25,6 +23,7 @@ export type {
   DatasetValidationIssueCode,
   DatasetValidationPath,
   DatasetValidationPathSegment,
+  RegionKitErrorCode,
 } from "./errors/index.js";
 
 export type {
@@ -46,7 +45,7 @@ export type {
   TextMatch,
 } from "./query/index.js";
 
+export { RegionKit } from "./region-kit.js";
+
 export type { RegionStore } from "./store/index.js";
 export { MemoryRegionStore } from "./store/index.js";
-
-export { RegionKit } from "./region-kit.js";

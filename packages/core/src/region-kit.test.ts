@@ -12,15 +12,92 @@ import {
   RegionNotFoundError,
 } from "./errors/index.js";
 
-import { RegionKit } from "./region-kit.js";
-import { MemoryRegionStore } from "./store/index.js";
+import type { RegionPage, RegionSearchPage } from "./query/index.js";
 
-import { regionStoreContractDataset } from "../test/contract/region-store-contract-dataset.js";
+import { RegionKit } from "./region-kit.js";
+import { MemoryRegionStore, type RegionStore } from "./store/index.js";
+
+import {
+  regionStoreContractDataset,
+  regionStoreContractMetadata,
+} from "../test/contract/region-store-contract-dataset.js";
 
 function createStore(): MemoryRegionStore {
   return MemoryRegionStore.fromData(
     structuredClone(regionStoreContractDataset),
   );
+}
+
+function createRegionStoreStub(
+  overrides: Partial<RegionStore> = {},
+): RegionStore {
+  const emptyRegionPage: RegionPage = {
+    items: [],
+    page: {
+      limit: 50,
+      offset: 0,
+      hasMore: false,
+      total: 0,
+    },
+  };
+
+  const emptySearchPage: RegionSearchPage = {
+    items: [],
+    page: {
+      limit: 50,
+      offset: 0,
+      hasMore: false,
+      total: 0,
+    },
+  };
+
+  return {
+    async getMetadata() {
+      return structuredClone(regionStoreContractMetadata);
+    },
+
+    async getById() {
+      return null;
+    },
+
+    async findByCode() {
+      return emptyRegionPage;
+    },
+
+    async findByName() {
+      return emptyRegionPage;
+    },
+
+    async search() {
+      return emptySearchPage;
+    },
+
+    async filter() {
+      return emptyRegionPage;
+    },
+
+    async parentOf() {
+      return null;
+    },
+
+    async childrenOf() {
+      return emptyRegionPage;
+    },
+
+    async ancestorsOf() {
+      return [];
+    },
+
+    async descendantsOf() {
+      return emptyRegionPage;
+    },
+
+    async close() {
+      return undefined;
+    },
+
+    ...overrides,
+  };
 }
 
 describe("RegionKit.fromFile", () => {
@@ -157,6 +234,45 @@ describe("RegionKit.fromStore", () => {
     );
 
     await regions.close();
+  });
+
+  it("works with a custom RegionStore implementation", async () => {
+    const getById = vi.fn(async (id: string) => {
+      if (id !== "custom-region") {
+        return null;
+      }
+
+      return {
+        id: "custom-region",
+        code: "CUSTOM",
+        name: "Custom Region",
+        level: 0,
+        type: "custom",
+        parentId: null,
+      };
+    });
+
+    const close = vi.fn(async () => undefined);
+
+    const store = createRegionStoreStub({
+      getById,
+      close,
+    });
+
+    const regions = await RegionKit.fromStore(store);
+
+    await expect(regions.getById("custom-region")).resolves.toEqual(
+      expect.objectContaining({
+        id: "custom-region",
+        name: "Custom Region",
+      }),
+    );
+
+    expect(getById).toHaveBeenCalledWith("custom-region");
+
+    await regions.close();
+
+    expect(close).toHaveBeenCalledTimes(1);
   });
 
   it.each([
