@@ -19,7 +19,8 @@
     "benchmark:memory": "pnpm build && node --expose-gc scripts/benchmark-memory-store.mjs --output=docs/benchmarks/memory-store-milestone-2.json",
     "changeset": "changeset",
     "changeset:status": "changeset status",
-    "version-packages": "changeset version"
+    "version-packages": "changeset version",
+    "check:distribution": "node scripts/check-distribution.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
