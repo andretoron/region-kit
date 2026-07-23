@@ -1,0 +1,115 @@
+{
+  "benchmark": "public-api-milestone-4",
+  "informational": true,
+  "generatedAt": "2026-07-23T16:02:16.471Z",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "release": "10.0.26200",
+    "architecture": "x64",
+    "cpu": "11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz",
+    "logicalCpuCount": 12,
+    "totalSystemMemoryMiB": 32505.938
+  },
+  "dataset": {
+    "kind": "synthetic-balanced-tree",
+    "regionCount": 11111,
+    "branchingFactor": 10,
+    "hierarchyDepth": 4,
+    "leafRegionCount": 10000,
+    "serializedBytes": 2023135,
+    "serializedMiB": 1.929
+  },
+  "configuration": {
+    "warmupIterations": 3,
+    "timingIterations": 10,
+    "paginationLimit": 100,
+    "paginationOffset": 5000
+  },
+  "timingsMilliseconds": {
+    "initialization": {
+      "fromData": {
+        "minimum": 91.794,
+        "median": 107.635,
+        "maximum": 150.675
+      },
+      "fromFile": {
+        "minimum": 69.671,
+        "median": 83.383,
+        "maximum": 129.914
+      }
+    },
+    "lookup": {
+      "getById": {
+        "minimum": 0.004,
+        "median": 0.005,
+        "maximum": 0.021
+      },
+      "findByCode": {
+        "minimum": 0.008,
+        "median": 0.012,
+        "maximum": 0.03
+      }
+    },
+    "search": {
+      "exactName": {
+        "minimum": 8.463,
+        "median": 8.859,
+        "maximum": 13.716
+      },
+      "prefix": {
+        "minimum": 9.405,
+        "median": 9.974,
+        "maximum": 10.678
+      },
+      "contains": {
+        "minimum": 5.598,
+        "median": 5.929,
+        "maximum": 6.865
+      }
+    },
+    "filtering": {
+      "filter": {
+        "minimum": 0.531,
+        "median": 0.548,
+        "maximum": 0.695
+      },
+      "largeResultPagination": {
+        "minimum": 1.213,
+        "median": 1.327,
+        "maximum": 1.635
+      }
+    },
+    "traversal": {
+      "childrenOf": {
+        "minimum": 0.023,
+        "median": 0.026,
+        "maximum": 0.034
+      },
+      "ancestorsOf": {
+        "minimum": 0.009,
+        "median": 0.01,
+        "maximum": 0.013
+      },
+      "descendantsOf": {
+        "minimum": 1.9,
+        "median": 1.972,
+        "maximum": 2.302
+      }
+    },
+    "lifecycle": {
+      "close": {
+        "minimum": 0.005,
+        "median": 0.006,
+        "maximum": 0.008
+      }
+    }
+  },
+  "notes": [
+    "All measured library operations use the public region-kit package entry point.",
+    "fromFile includes file reading, JSON parsing, validation, snapshot creation, and index construction; temporary file creation is excluded.",
+    "Initialization timings exclude close(), while close timings exclude initialization.",
+    "Results are informational and can vary with runtime, hardware, operating system, and background activity.",
+    "The deterministic synthetic hierarchy is not a replacement for a future benchmark using a locked production dataset."
+  ]
+}
