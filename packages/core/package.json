@@ -2,6 +2,14 @@
   "name": "region-kit",
   "version": "0.0.0",
   "description": "A framework-agnostic Node.js library for querying and navigating administrative region datasets.",
+  "keywords": [
+    "administrative-regions",
+    "region-data",
+    "hierarchy",
+    "search",
+    "typescript",
+    "nodejs"
+  ],
   "license": "ISC",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,6 +23,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "engines": {
@@ -28,5 +37,18 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andretoron/region-kit.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/andretoron/region-kit#readme",
+  "bugs": {
+    "url": "https://github.com/andretoron/region-kit/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
