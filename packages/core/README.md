@@ -15,6 +15,48 @@ region datasets.
 pnpm add region-kit
 ```
 
+## ESM requirements
+
+`region-kit` is an ESM-only Node.js package.
+
+JavaScript consumers should either use the `.mjs` extension or configure their
+package as an ECMAScript module:
+
+```json
+{
+  "type": "module"
+}
+```
+
+TypeScript consumers should use Node-compatible ESM resolution:
+
+```json
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  }
+}
+```
+
+CommonJS `require("region-kit")` is not supported. A CommonJS application may
+load the package through asynchronous dynamic import:
+
+```js
+const { RegionKit } = await import("region-kit");
+```
+
+### `ERR_PACKAGE_PATH_NOT_EXPORTED`
+
+This usually means that the ESM-only `region-kit` entry point was loaded through
+CommonJS `require()`.
+
+Configure the consumer as ESM or use dynamic `import()`.
+
+NestJS applications should create one application-scoped `RegionKit` instance
+and close it through the Nest lifecycle. See
+[Using `region-kit` with NestJS](https://github.com/andretoron/region-kit/blob/main/docs/guides/using-with-nestjs.md).
+
 ## Quick start
 
 Create a small dataset inline and query it:
