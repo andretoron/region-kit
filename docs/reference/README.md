@@ -1,7 +1,10 @@
 # Referensi
 
-Bagian ini akan memuat referensi public API dan kontrak teknis `region-kit`.
+Bagian ini memuat referensi public API dan kontrak teknis `region-kit`.
 
-Referensi API yang dihasilkan oleh TypeDoc akan ditautkan dari halaman ini setelah
-public API mulai tersedia. Output dokumentasi yang dihasilkan tidak disimpan dalam
-Git.
+- [Public API](./public-api.md) — daftar entry point, runtime export, dan type
+  export yang didukung.
+
+Referensi HTML dihasilkan dari TSDoc dengan `pnpm run docs`. Output berada di
+`.generated/docs/api` dan tidak disimpan dalam Git. Gunakan `pnpm docs:check`
+untuk memvalidasi kelengkapan serta link dokumentasi tanpa menghasilkan output.
