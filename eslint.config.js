@@ -29,4 +29,11 @@ export default defineConfig([
       reportUnusedDisableDirectives: "error",
     },
   },
+  {
+    name: "region-kit/commonjs-consumer-smoke",
+    files: ["test/consumer-smoke/commonjs/**/*.cjs"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ]);
