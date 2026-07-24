@@ -22,6 +22,7 @@
     "changeset": "changeset",
     "changeset:status": "changeset status",
     "version-packages": "changeset version",
+    "release": "changeset publish",
     "check:distribution": "node scripts/check-distribution.mjs"
   },
   "devDependencies": {
