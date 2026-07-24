@@ -52,6 +52,3 @@ jobs:
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Temporary bootstrap credential for the first publish. Remove this
-          # mapping after configuring the npm trusted publisher for release.yml.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
