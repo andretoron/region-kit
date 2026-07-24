@@ -1,0 +1,6 @@
+{
+  "name": "region-kit-javascript-esm-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module"
+}

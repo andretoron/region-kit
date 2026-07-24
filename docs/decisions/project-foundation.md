@@ -1269,7 +1269,8 @@ const result = await regions.findByCode("3273", {
 });
 ```
 
-Public API tidak menyediakan `getByCode()` pada MVP karena nama tersebut menyiratkan satu hasil unik.
+Public API menggunakan `findByCode()` pada MVP karena code dapat tidak unik dan
+nama lookup singular akan menyiratkan satu hasil unik.
 
 ### Pencarian Nama
 
@@ -3678,6 +3679,8 @@ Kriteria selesai:
 
 ### Milestone 2 — Memory Store
 
+**Status:** Diimplementasikan
+
 **Tujuan:** menyediakan implementasi storage default.
 
 Cakupan:
@@ -3699,7 +3702,13 @@ Kriteria selesai:
 - Dataset invalid ditolak sebelum store dibuat.
 - Penggunaan memory dan waktu inisialisasi telah diukur.
 
+Baseline penggunaan memory dan waktu inisialisasi dicatat pada
+[`memory-store-milestone-2.json`](../benchmarks/memory-store-milestone-2.json).
+Benchmark ini masih bersifat informational dan menggunakan dataset sintetis.
+
 ### Milestone 3 — Public Query API
+
+**Status:** Diimplementasikan
 
 **Tujuan:** menyelesaikan kemampuan utama pengguna.
 
@@ -3733,7 +3742,17 @@ Kriteria selesai:
 - Query setelah `close()` ditolak.
 - Public API tidak bergantung pada detail memory store.
 
+Implementasi Milestone 3 menyediakan facade public `RegionKit`, JSON file
+loading, kontrak `RegionStore` yang storage-agnostic, validasi query, pagination,
+sorting deterministik, text search terhadap `name` dan `aliases`, filtering,
+hierarchy traversal, operational error classes, dan lifecycle closed-state.
+
+Shared `RegionStore` contract tests digunakan untuk menjaga semantic query agar
+tetap konsisten antara memory store dan adapter storage masa depan.
+
 ### Milestone 4 — Package Hardening
+
+**Status:** Diimplementasikan
 
 **Tujuan:** membuktikan package dapat digunakan di luar workspace.
 
@@ -3760,6 +3779,32 @@ Kriteria selesai:
 - Dataset produksi dan file development besar tidak masuk tarball.
 - Coverage gate terpenuhi.
 - Benchmark baseline terdokumentasi.
+
+Implementasi Milestone 4 menyediakan distribution gate yang selalu melakukan
+clean build, membuat tarball baru di temporary directory, mengaudit isi
+tarball, lalu menginstalnya ke project consumer JavaScript dan TypeScript yang
+berada di luar workspace. Consumer JavaScript memvalidasi public root import,
+lookup, search, traversal, lifecycle, dan penolakan internal deep import.
+Consumer TypeScript memvalidasi runtime serta type-only exports menggunakan
+`NodeNext`, strict mode, dan declaration checking penuh.
+
+Quality gate menggunakan test suite dengan coverage threshold dan CI menjalankan
+packed-distribution checks pada Node.js 22 serta 24. Publint dan Are The Types
+Wrong tetap memvalidasi package ESM-only. Baseline public API menggunakan
+hierarki sintetis bercabang dan disimpan dalam
+[`public-api-milestone-4.json`](../benchmarks/public-api-milestone-4.json);
+hasil benchmark tetap bersifat informasional.
+
+Security review memastikan tarball tidak membawa credential, environment file,
+dataset produksi, database dump, development fixture, absolute local path, atau
+install hook. Package tidak memiliki runtime dependency, production dependency
+audit tidak menemukan known vulnerability, dan LICENSE ISC dalam tarball cocok
+dengan LICENSE repository. Copyright holder `andregnum` telah dikonfirmasi
+sebagai identitas yang disengaja.
+
+Milestone ini hanya mengubah test, tooling, CI, benchmark, dan dokumentasi; tidak
+mengubah runtime package, public API, manifest package terbitan, atau behaviour
+consumer. Karena itu milestone ini tidak memerlukan changeset.
 
 ### Milestone 5 — Dokumentasi dan MVP Release
 
@@ -4045,3 +4090,6 @@ Sebuah milestone dianggap selesai hanya jika:
 | 2026-07-13 | Memindahkan dokumen fondasi ke struktur keputusan arsitektur repository.                    |
 | 2026-07-13 | Menambahkan lisensi serta panduan dan template kontribusi repository.                       |
 | 2026-07-18 | Mencatat implementasi Milestone 1 — Dataset Contract dan Validation.                        |
+| 2026-07-21 | Mencatat implementasi Milestone 2 — Memory Store dan benchmark awal.                        |
+| 2026-07-23 | Mencatat implementasi Milestone 3 — Public Query API dan facade `RegionKit`.                |
+| 2026-07-24 | Mencatat implementasi Milestone 4 — Package Hardening dan distribution gate.                |

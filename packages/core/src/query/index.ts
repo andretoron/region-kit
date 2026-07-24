@@ -1,0 +1,18 @@
+export type {
+  DescendantOptions,
+  FindByCodeOptions,
+  FindByNameOptions,
+  PageInfo,
+  PaginationOptions,
+  QueryOptions,
+  RegionFilter,
+  RegionPage,
+  RegionSearchMatchedField,
+  RegionSearchPage,
+  RegionSearchResult,
+  RegionSortField,
+  SearchOptions,
+  SortDirection,
+  SortOptions,
+  TextMatch,
+} from "./types.js";
