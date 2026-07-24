@@ -31,6 +31,7 @@ transformation remain separate responsibilities.
 
 - [Documentation](./docs/README.md)
 - [Package usage](./packages/core/README.md)
+- [Runnable examples](./examples/README.md)
 - [Known limitations](./docs/known-limitations.md)
 - [Versioning and migrations](./docs/versioning-and-migrations.md)
 - [Contributing](./CONTRIBUTING.md)

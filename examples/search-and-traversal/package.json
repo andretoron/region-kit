@@ -1,0 +1,15 @@
+{
+  "name": "region-kit-example-search-and-traversal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsc -p tsconfig.run.json && node .generated/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "region-kit": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1"
+  }
+}
