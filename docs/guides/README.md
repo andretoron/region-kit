@@ -8,6 +8,9 @@ Bagian ini berisi panduan berbasis tugas untuk pengguna `region-kit`.
   menangani detail kegagalan dengan public API yang tersedia.
 - [Menggunakan JSON](./using-json.md) — memuat nilai JavaScript dan file JSON
   lokal dengan lifecycle yang aman.
+- [Menggunakan `region-kit` dengan NestJS](./using-with-nestjs.md) — membuat
+  provider singleton, menunggu inisialisasi, dan menutup instance saat aplikasi
+  berhenti.
 - [Querying regions](./querying-regions.md) — lookup, search, filtering,
   traversal, pagination, dan lifecycle.
 - [Menangani error](./handling-errors.md) — membedakan kegagalan loading,
