@@ -68,6 +68,13 @@ const typescriptConsumerFixtureDirectory = join(
   "typescript-esm",
 );
 
+const commonJsConsumerFixtureDirectory = join(
+  repositoryRoot,
+  "test",
+  "consumer-smoke",
+  "commonjs",
+);
+
 function runPnpm(arguments_, options = {}) {
   const pnpmCliPath = process.env.npm_execpath;
 
@@ -248,6 +255,24 @@ function runTypeScriptConsumer(tarballPath) {
   console.log("TypeScript ESM consumer smoke test passed.");
 }
 
+function runCommonJsConsumer(tarballPath) {
+  const consumerDirectory = join(temporaryDirectory, "commonjs");
+
+  cpSync(commonJsConsumerFixtureDirectory, consumerDirectory, {
+    recursive: true,
+  });
+
+  console.log("Installing tarball in the CommonJS consumer...");
+  installTarball(consumerDirectory, tarballPath);
+
+  console.log("Running the CommonJS negative smoke test...");
+
+  execFileSync(process.execPath, ["index.cjs"], {
+    cwd: consumerDirectory,
+    stdio: "inherit",
+  });
+}
+
 try {
   console.log("Building region-kit from a clean dist directory...");
   runPnpm(["--filter", "region-kit", "build"], { stdio: "inherit" });
@@ -283,6 +308,7 @@ try {
   auditSourceMaps();
   runJavaScriptConsumer(tarballPath);
   runTypeScriptConsumer(tarballPath);
+  runCommonJsConsumer(tarballPath);
 
   console.log(
     `Distribution check passed for ${packReport.name}@${packReport.version} (${packagePaths.length} files).`,
