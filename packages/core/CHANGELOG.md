@@ -1,5 +1,11 @@
 # region-kit
 
+## 0.1.1
+
+### Patch Changes
+
+- 7b27277: Improve package repository metadata and document ESM, TypeScript, and NestJS consumer configuration.
+
 ## 0.1.0
 
 ### Minor Changes
