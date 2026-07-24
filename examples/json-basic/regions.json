@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetVersion": "example-1",
+  "country": {
+    "code": "ID",
+    "name": "Indonesia"
+  },
+  "source": {
+    "id": "example",
+    "name": "Region Kit example"
+  },
+  "generatedAt": "2026-07-24T00:00:00.000Z",
+  "regions": [
+    {
+      "id": "ID",
+      "code": "ID",
+      "name": "Indonesia",
+      "level": 0,
+      "type": "country",
+      "parentId": null
+    },
+    {
+      "id": "ID-JB",
+      "code": "32",
+      "name": "Jawa Barat",
+      "level": 1,
+      "type": "province",
+      "parentId": "ID"
+    },
+    {
+      "id": "ID-JB-BDG",
+      "code": "3273",
+      "name": "Kota Bandung",
+      "level": 2,
+      "type": "city",
+      "parentId": "ID-JB",
+      "aliases": ["Bandung"]
+    },
+    {
+      "id": "ID-JB-BKS",
+      "code": "3275",
+      "name": "Kota Bekasi",
+      "level": 2,
+      "type": "city",
+      "parentId": "ID-JB",
+      "aliases": ["Bekasi"]
+    }
+  ]
+}

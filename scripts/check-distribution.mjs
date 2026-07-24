@@ -22,6 +22,7 @@ const typescriptCliPath = fileURLToPath(
 );
 
 const requiredFiles = [
+  "CHANGELOG.md",
   "LICENSE",
   "README.md",
   "package.json",
@@ -32,6 +33,7 @@ const requiredFiles = [
 ];
 
 const allowedTopLevelEntries = new Set([
+  "CHANGELOG.md",
   "LICENSE",
   "README.md",
   "package.json",

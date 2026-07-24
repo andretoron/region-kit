@@ -3,8 +3,8 @@
 A framework-agnostic Node.js library for querying and navigating administrative
 region datasets.
 
-> `region-kit` is under active development and has not reached its first stable
-> release.
+> `region-kit 0.1.x` is an MVP release. Its public API may still change before
+> `1.0.0`.
 
 ## Requirements
 
@@ -17,12 +17,48 @@ pnpm add region-kit
 
 ## Quick start
 
-Load a Region-Kit JSON dataset from a local file:
+Create a small dataset inline and query it:
 
 ```ts
-import { RegionKit } from "region-kit";
+import { RegionKit, type RegionDataset } from "region-kit";
 
-const regions = await RegionKit.fromFile("./data/regions.json");
+const dataset: RegionDataset = {
+  schemaVersion: "1.0.0",
+  datasetVersion: "example-1",
+  country: { code: "ID", name: "Indonesia" },
+  source: { id: "example", name: "Example source" },
+  generatedAt: "2026-07-24T00:00:00.000Z",
+  regions: [
+    {
+      id: "ID",
+      code: "ID",
+      name: "Indonesia",
+      level: 0,
+      type: "country",
+      parentId: null,
+    },
+    {
+      id: "ID-JB",
+      code: "32",
+      name: "Jawa Barat",
+      level: 1,
+      type: "province",
+      parentId: "ID",
+      aliases: ["West Java"],
+    },
+    {
+      id: "ID-JB-BDG",
+      code: "3273",
+      name: "Kota Bandung",
+      level: 2,
+      type: "city",
+      parentId: "ID-JB",
+      aliases: ["Bandung"],
+    },
+  ],
+};
+
+const regions = await RegionKit.fromData(dataset);
 
 try {
   const province = await regions.requireById("ID-JB");
@@ -38,9 +74,8 @@ try {
 }
 ```
 
-`RegionKit.fromFile()` accepts a file path string or a `file:` URL. It reads and
-parses the JSON file, validates the dataset, and creates an indexed in-memory
-store.
+The input is validated and copied into an indexed in-memory snapshot. The
+package does not bundle or download administrative-region datasets.
 
 ## Creating an instance
 

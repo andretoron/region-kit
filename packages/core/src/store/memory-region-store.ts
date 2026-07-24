@@ -46,7 +46,11 @@ import {
 import type { RegionStore } from "./region-store.js";
 
 /**
- * A read-only RegionStore backed by a validated in-memory dataset.
+ * A read-only {@link RegionStore} backed by a validated, indexed memory snapshot.
+ *
+ * Inputs are copied into internal state, and returned regions are cloned so
+ * callers cannot mutate the store. Collection results use region ID as a stable
+ * final sorting tie-breaker.
  */
 export class MemoryRegionStore implements RegionStore {
   readonly #metadata: DatasetMetadata;
@@ -60,7 +64,11 @@ export class MemoryRegionStore implements RegionStore {
   }
 
   /**
-   * Validates a dataset and build an indexed memory store.
+   * Validates a dataset and builds an indexed memory store.
+   *
+   * @param input - Unknown value expected to satisfy the dataset contract.
+   * @returns A ready-to-query memory store.
+   * @throws {DatasetValidationError} When validation fails.
    */
   static fromData(input: unknown): MemoryRegionStore {
     return new MemoryRegionStore(prepareMemoryDataset(input));
@@ -76,10 +84,12 @@ export class MemoryRegionStore implements RegionStore {
     return region;
   }
 
+  /** @inheritDoc RegionStore.getMetadata */
   getMetadata(): Promise<DatasetMetadata> {
     return Promise.resolve(this.#metadata);
   }
 
+  /** @inheritDoc RegionStore.getById */
   async getById(id: string): Promise<Region | null> {
     validateRegionId(id);
 
@@ -88,6 +98,7 @@ export class MemoryRegionStore implements RegionStore {
     return region === undefined ? null : structuredClone(region);
   }
 
+  /** @inheritDoc RegionStore.findByCode */
   async findByCode(
     code: string,
     options: FindByCodeOptions = {},
@@ -106,6 +117,7 @@ export class MemoryRegionStore implements RegionStore {
     return createMemoryRegionPage(sorted, resolved.pagination);
   }
 
+  /** @inheritDoc RegionStore.findByName */
   async findByName(
     name: string,
     options: FindByNameOptions = {},
@@ -129,6 +141,7 @@ export class MemoryRegionStore implements RegionStore {
     return createMemoryRegionPage(sorted, resolved.pagination);
   }
 
+  /** @inheritDoc RegionStore.search */
   async search(
     query: string,
     options: SearchOptions = {},
@@ -150,6 +163,7 @@ export class MemoryRegionStore implements RegionStore {
     return createMemoryRegionSearchPage(sorted, resolved.pagination);
   }
 
+  /** @inheritDoc RegionStore.filter */
   async filter(
     criteria: RegionFilter,
     options: QueryOptions = {},
@@ -176,6 +190,7 @@ export class MemoryRegionStore implements RegionStore {
     return createMemoryRegionPage(sorted, resolved.pagination);
   }
 
+  /** @inheritDoc RegionStore.parentOf */
   async parentOf(id: string): Promise<Region | null> {
     validateRegionId(id);
 
@@ -196,6 +211,7 @@ export class MemoryRegionStore implements RegionStore {
     return structuredClone(parent);
   }
 
+  /** @inheritDoc RegionStore.childrenOf */
   async childrenOf(
     id: string,
     options: QueryOptions = {},
@@ -214,6 +230,7 @@ export class MemoryRegionStore implements RegionStore {
     return createMemoryRegionPage(sorted, resolved.pagination);
   }
 
+  /** @inheritDoc RegionStore.ancestorsOf */
   async ancestorsOf(id: string): Promise<readonly Region[]> {
     validateRegionId(id);
 
@@ -226,6 +243,7 @@ export class MemoryRegionStore implements RegionStore {
     return Object.freeze(ancestors);
   }
 
+  /** @inheritDoc RegionStore.descendantsOf */
   async descendantsOf(
     id: string,
     options: DescendantOptions = {},
@@ -255,6 +273,7 @@ export class MemoryRegionStore implements RegionStore {
     return createMemoryRegionPage(sorted, resolved.pagination);
   }
 
+  /** @inheritDoc RegionStore.close */
   close(): Promise<void> {
     return Promise.resolve();
   }

@@ -49,6 +49,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Validate API documentation
+        run: pnpm docs:check
+
       - name: Test with coverage
         run: pnpm test:coverage
 

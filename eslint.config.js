@@ -7,7 +7,12 @@ import eslintConfigPrettier from "eslint-config-prettier";
 export default defineConfig([
   {
     name: "region-kit/ignores",
-    ignores: ["**/node_modules/**", "**/dist/**", "**/coverage/**"],
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/coverage/**",
+      "**/.generated/**",
+    ],
   },
   {
     name: "region-kit/javascript-and-typescript",
